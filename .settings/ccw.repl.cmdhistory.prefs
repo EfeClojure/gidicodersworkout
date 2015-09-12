@@ -1,2 +1,2 @@
-cmdhistory=["*conn*"]
+cmdhistory=["*conn*" "(get-user \\"efe\\")" "(in-ns gidicodersworkout.db.dbaccess)" "(in-ns 'gidicodersworkout.db.dbaccess)" "(get-user \\"efe\\")" "*ns*" "(-main)" "(in-ns gidicodersworkout.db.dbaccess)" "(in-ns 'gidicodersworkout.db.dbaccess)" "*ns*" "(get-workouts)"]
 eclipse.preferences.version=1

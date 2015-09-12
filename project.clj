@@ -23,10 +23,15 @@
                  [org.webjars/jquery "2.1.4"]
                  [migratus "0.8.4"]
                  [conman "0.1.7"]
-                 [org.postgresql/postgresql "9.4-1201-jdbc41"]
                  [org.immutant/web "2.1.0"]
-
-                 [korma "0.4.0"]]
+                 
+                 [org.postgresql/postgresql "9.4-1201-jdbc41"]
+                 [korma "0.4.0"]
+                 [org.clojure/core.match "0.3.0-alpha4"]
+                 
+                 [clj-time "0.11.0"]
+                 [clj-http "1.0.1"]
+                 [digest "1.4.4"]]
 
   :min-lein-version "2.0.0"
   :uberjar-name "gidicodersworkout.jar"

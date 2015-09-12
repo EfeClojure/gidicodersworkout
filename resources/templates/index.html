@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+
+
+
+
+  <!-- <ul class="nav nav-pills"> -->
+  <!--   <li role="presentation" class="active"><a href="#">Workouts</a></li> -->
+  <!--   <li role="presentation"><a href="#">Coders</a></li> -->
+  <!-- </ul> -->
+
+  <div class="jumbotron">
+    <h1>Welcome to gidicodersworkout
+      <span><a class="btn btn-primary btn-lg" 
+               href="{{servlet-context}}/login">Enter &raquo;</a>
+    </span></h1>
+    
+    <ul class="nav nav-tabs nav-justified">
+      <li role="presentation" class="active">
+      <a href="#">Workouts</a>
+      
+      <ul>
+        {% for workout in workouts %}
+        <li> {{workout}} </li>
+        {% endfor %}
+      </ul>      
+      </li>
+      <li role="presentation">
+        <a href="#">Coders</a>
+        <ul>
+          {% for user in users %}
+          <li> {{user}} </li>
+          {% endfor %}
+        </ul>
+      </li>
+    </ul>
+  </div>
+
+
+{% endblock %}
+
