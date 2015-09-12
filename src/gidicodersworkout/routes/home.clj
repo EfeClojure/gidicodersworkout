@@ -32,13 +32,13 @@
         (if userid-cookie
           (let [the-user (the-db/get-user-by-id userid-cookie)]
             (if (empty? the-user)
-              (do (print "Couldn't find user with userId: " userId)
+              (do (println "Couldn't find user with userId: " userid-cookie)
                   (layout/render "index.html" {:coders the-coders}))
               (do 
-                (print "Got the user with userId: " userId) 
+                (println "Got the user with userId: " userid-cookie) 
                 (layout/render "index.html" (:user the-user
                                                    :coders the-coders)))))
-          (do (print "No cookies with :userId key")
+          (do (println "No cookies with :userId key")
             (layout/render "index.html" 
                            {:coders the-coders})))))))
 
@@ -79,3 +79,5 @@
         (signUserUp firstname lastname username 
                     email password)))
 
+;; postgres timestamp format
+;; 2002-12-31 16:00:00

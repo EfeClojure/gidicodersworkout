@@ -1,7 +1,11 @@
 (ns gidicodersworkout.db.dbaccess
   (:refer-clojure :exclude [update])
   (:require [immutant.web :as immutant]
-            [digest :as digest])
+            [digest :as digest]
+            
+            [clj-time.core :as tyme]
+            [clj-time.format :as tyme-format]
+            [clj-time.coerce :as tyme-coerce])
   (:use [korma.db :only (defdb postgres)]
         [korma.core]))
 
@@ -15,7 +19,14 @@
 (declare workouts users languages roles 
          workout-entries)
 
+
+#_(defonce built-in-formatter (tyme-format/formatters :basic-date-time))
+(defonce postgres-timestamp (tyme-format/formatter "yyyy-MM-dd hh:mm:ss"))
+;; postgres timestamp format
+;; 2002-12-31 16:00:00
+
 ;; valid time stamp: '2004-10-19 10:23:54'
+
 
 (defentity workouts 
   (pk :workout_id)
@@ -23,7 +34,28 @@
   
   (entity-fields :workout_title :workout_text 
                  :start_date :end_date :is_active)
-  (has-many workout-entries))
+  (has-many workout-entries)
+
+  (prepare (fn [{timestamp :start_date :as v}]
+             (if timestamp
+               (assoc v :start_date 
+                      (tyme-format/unparse postgres-timestamp
+                                           (tyme-coerce/from-long timestamp)))
+                   v)))
+  (transform (fn [{timestamp :start_date :as v}]
+               (if timestamp
+                 (assoc v :start_date (.getTime timestamp))
+                 v)))
+  (prepare (fn [{timestamp :end_date :as v}]
+             (if timestamp
+               (assoc v :end_date 
+                      (tyme-format/unparse postgres-timestamp
+                                           (tyme-coerce/from-long timestamp)))
+                   v)))
+  (transform (fn [{timestamp :end_date :as v}]
+               (if timestamp
+                 (assoc v :end_date (.getTime timestamp))
+                 v))))
 
 (defentity users
   (pk :user_id) 
@@ -88,13 +120,26 @@
                          :password (digest/md5 password) :role_id 1})))
 
 
+
+
 (defn get-workouts []
   (select workouts
           (with workout-entries)))
 
+(defn to-timestamp [long-time]
+  (tyme-format/parse postgres-timestamp 
+                     (.toString (tyme-coerce/from-long long-time))))
+
+
+(defn to-Date-Time [the-long-time]
+  (tyme-coerce/from-long the-long-time))
   
+(defn to-long-time [the-Date-Time]
+  (tyme-coerce/to-long the-Date-Time))
+
+
 (defn add-workout [workout-name workout-text start-date end-date]
-  (insert users (values {:workout_title workout-name 
+  (insert workouts (values {:workout_title workout-name 
                          :workout_text workout-text
                          :start_date start-date :end_date end-date 
                          :is_active false})))
