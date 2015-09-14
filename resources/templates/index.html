@@ -1,8 +1,6 @@
 {% extends "base.html" %}
+
 {% block content %}
-
-
-
 
   <!-- <ul class="nav nav-pills"> -->
   <!--   <li role="presentation" class="active"><a href="#">Workouts</a></li> -->
@@ -15,33 +13,60 @@
                href="{{servlet-context}}/login">Enter &raquo;</a>
     </span></h1>
     
-    <ul class="nav nav-tabs nav-justified">
+    <ul class="nav nav-tabs nav-justified" role="tablist">
       <li role="presentation" class="active">
-        <a href="#">Workouts</a>
-        
-        <!-- <div class="container"> -->
-        <!--   <div class="row row-centered"> -->
-        <!--     {% for workout in workouts %} -->
-        <!--     <div class="col-xs-3 col-centered"> -->
-        <!--       <div class="item"> -->
-        <!--         <div class="content">{{workout}}</div> -->
-        <!--       </div> -->
-        <!--       {% endfor %} -->
-        <!--     </div> -->
-        <!--   </div> -->
-        <!-- </div> -->
+        <a href="#workouts-list" aria-controls="workouts-list" role="tab" data-toggle="tab">Workouts</a>
       </li>
       
       <li role="presentation">
-        <a href="#">Coders</a>
-        <ul>
-          {% for user in users %}
-          <li> {{user}} </li>
-          {% endfor %}
-        </ul>
+        <a href="#coders-list" aria-controls="coders-list" role="tab" data-toggle="tab">Coders</a>
       </li>
     </ul>
+
+  <div class="tab-content">
+    <div id="workouts-list" class="list-group tab-pane active" role="tabpanel">
+      {% for workout in workouts %}
+      <a href="#" class="list-group-item">
+        <h4 class="list-group-item-heading">{{workout.workout_title}}</h4>
+        <p class="list-group-item-text">{{workout.workout_text}}</p>
+      </a>
+      {% endfor %}
+      <a class="btn btn-primary btn-lg" href="#" 
+         data-toggle="modal" data-target="#myModal">Create Workout</a>
+    </div>
+    
+    <div id="coders-list" class="list-group tab-pane" role="tabpanel">
+      {% for user in coders %}
+      <a href="#" class="list-group-item"> 
+        {{user.first_name}} - {{user.last_name}}
+      </a>
+      {% endfor %}
+    </div>
   </div>
+
+
+<!-- Trigger the modal with a button -->
+<!-- <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Open Modal</button> -->
+
+<!-- Modal -->
+<div id="myModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Create a Workout</h4>
+      </div>
+      <div class="modal-body">
+        <p>Some text in the modal.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 
 {% endblock %}

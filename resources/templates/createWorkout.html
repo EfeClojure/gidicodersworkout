@@ -1,0 +1,48 @@
+{% extends "base.html" %} {% block content %}
+
+<div class="box">
+    <div id="contactFormContainer">
+        <div id="contactForm">
+            <fieldset>
+                <label for="Name">Name </label>
+                <input id="name" type="text">
+
+                <label for="Email">Email address </label>
+                <input id="Email" type="text">
+
+                <label for="Message">Your message *</label>
+                <textarea id="Message" rows="3" cols="20"></textarea>
+
+                <input id="sendMail" type="submit" name="submit" onclick="closeForm()">
+                <span id="messageSent">Your message has been sent successfully!</span>
+            </fieldset>
+        </div>
+        <div id="contactLink">
+          <p>Click me</p>
+        </div>
+    </div>
+
+    <div class="header">
+        <h1>Company logo</h1>
+    </div>
+
+</div>
+
+{% style "/css/createWorkoutStyle.css" %} {% endblock %} {% block page-scripts %}
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#contactLink").click(function() {
+            if ($("#contactForm").is(":hidden")) {
+                $("#contactForm").slideDown("slow");
+            } else {
+                $("#contactForm").slideUp("slow");
+            }
+        });
+    });
+
+    function closeForm() {
+        $("#messageSent").show("slow");
+        setTimeout('$("#messageSent").hide();$("#contactForm").slideUp("slow")', 2000);
+    }
+</script>
+{% endblock %}

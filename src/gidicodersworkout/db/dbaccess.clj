@@ -20,12 +20,24 @@
          workout-entries)
 
 
-#_(defonce built-in-formatter (tyme-format/formatters :basic-date-time))
 (defonce postgres-timestamp (tyme-format/formatter "yyyy-MM-dd hh:mm:ss"))
 ;; postgres timestamp format
 ;; 2002-12-31 16:00:00
 
 ;; valid time stamp: '2004-10-19 10:23:54'
+(defn to-timestamp [lg-time]
+  (tyme-format/unparse postgres-timestamp
+                       (tyme-coerce/from-long lg-time)))
+
+(defn timestamp-to-lgtime [the-timestamp]
+  #_(tyme-format/parse postgres-timestamp the-timestamp)
+  (tyme-coerce/to-long the-timestamp))
+
+(defn to-Date-Time [the-lg-time]
+  (tyme-coerce/from-long the-lg-time))
+  
+(defn to-long-time [the-Date-Time]
+  (tyme-coerce/to-long the-Date-Time))
 
 
 (defentity workouts 
@@ -35,26 +47,22 @@
   (entity-fields :workout_title :workout_text 
                  :start_date :end_date :is_active)
   (has-many workout-entries)
-
+  
   (prepare (fn [{timestamp :start_date :as v}]
              (if timestamp
-               (assoc v :start_date 
-                      (tyme-format/unparse postgres-timestamp
-                                           (tyme-coerce/from-long timestamp)))
-                   v)))
+               (assoc v :start_date (.toString (to-timestamp timestamp)) )
+               v)))
   (transform (fn [{timestamp :start_date :as v}]
                (if timestamp
-                 (assoc v :start_date (.getTime timestamp))
+                 (assoc v :start_date (timestamp-to-lgtime timestamp))
                  v)))
   (prepare (fn [{timestamp :end_date :as v}]
              (if timestamp
-               (assoc v :end_date 
-                      (tyme-format/unparse postgres-timestamp
-                                           (tyme-coerce/from-long timestamp)))
-                   v)))
+               (assoc v :end_date (.toString (to-timestamp timestamp)))
+               v)))
   (transform (fn [{timestamp :end_date :as v}]
                (if timestamp
-                 (assoc v :end_date (.getTime timestamp))
+                 (assoc v :end_date (timestamp-to-lgtime timestamp))
                  v))))
 
 (defentity users
@@ -83,11 +91,20 @@
   (pk :workout_entry_id)
   (table :workout_entry)
   
-  (entity-fields :source_text :date_sent)
+  (entity-fields :source_text :date_sent_in)
   
   (belongs-to workouts)
   (has-one users)
-  (has-one languages))
+  (has-one languages)
+
+  (prepare (fn [{timestamp :date_sent_in :as v}]
+             (if timestamp
+               (assoc v :date_sent (to-timestamp timestamp))
+               v)))
+  (transform (fn [{timestamp :date_sent_in :as v}]
+               (if timestamp
+                 (assoc v :date_sent (timestamp-to-lgtime timestamp))
+                 v))))
 
 ;; -- 
 
@@ -120,40 +137,52 @@
                          :password (digest/md5 password) :role_id 1})))
 
 
-
-
 (defn get-workouts []
   (select workouts
           (with workout-entries)))
 
-(defn to-timestamp [long-time]
-  (tyme-format/parse postgres-timestamp 
-                     (.toString (tyme-coerce/from-long long-time))))
-
-
-(defn to-Date-Time [the-long-time]
-  (tyme-coerce/from-long the-long-time))
-  
-(defn to-long-time [the-Date-Time]
-  (tyme-coerce/to-long the-Date-Time))
-
 
 (defn add-workout [workout-name workout-text start-date end-date]
   (insert workouts (values {:workout_title workout-name 
-                         :workout_text workout-text
-                         :start_date start-date :end_date end-date 
-                         :is_active false})))
+                            :workout_text workout-text
+                            :start_date start-date :end_date end-date 
+                            :is_active false})))
+
+#_(insert workouts (values {:workout_title "League of Anagram detectives" 
+                          :workout_text "Tell when two words given are anagrams"
+                          :start_date (tyme-coerce/to-long (tyme/now)) 
+                             
+                          :end_date (tyme-coerce/to-long (tyme/now))
+                          :is_active false}))
 
 (defn get-workout-entries [workout-id]
   (let [the-workout (select workouts
                             (with workout-entries)
-                            (where {:worker_id workout-id}))]
-    (if the-workout
-      the-workout)))
+                            (where {:workout_id workout-id}))]
+    (if (not (empty? the-workout))
+      (first the-workout)
+      nil)))
+
+(defn get-user-workout-entries [user-id]
+  (let [results (select workout-entries
+                        (with users (where {:user_id user-id})))]
+    (if (not (empty? results))
+      results
+      nil)))
+
+(defn get-workout-entry [workout-entry-id]
+  (let [results (select workout-entries
+                        (with users)
+                        (where {:workout_entry_id workout-entry-id}))]
+    (if (not (empty? results))
+      (first results)
+      nil)))
+
 
 (defn get-languages []
   (select languages))
 
-
+(defn get-roles []
+  (select roles))
 
 
