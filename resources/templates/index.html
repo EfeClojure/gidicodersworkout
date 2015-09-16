@@ -1,73 +1,107 @@
-{% extends "base.html" %}
+{% extends "base.html" %} {% block content %}
 
-{% block content %}
+<!-- <ul class="nav nav-pills"> -->
+<!--   <li role="presentation" class="active"><a href="#">Workouts</a></li> -->
+<!--   <li role="presentation"><a href="#">Coders</a></li> -->
+<!-- </ul> -->
 
-  <!-- <ul class="nav nav-pills"> -->
-  <!--   <li role="presentation" class="active"><a href="#">Workouts</a></li> -->
-  <!--   <li role="presentation"><a href="#">Coders</a></li> -->
-  <!-- </ul> -->
-
-  <div class="jumbotron">
+<div class="jumbotron">
     <h1>Welcome to gidicodersworkout
       <span><a class="btn btn-primary btn-lg" 
                href="{{servlet-context}}/login">Enter &raquo;</a>
     </span></h1>
-    
+
     <ul class="nav nav-tabs nav-justified" role="tablist">
-      <li role="presentation" class="active">
-        <a href="#workouts-list" aria-controls="workouts-list" role="tab" data-toggle="tab">Workouts</a>
-      </li>
-      
-      <li role="presentation">
-        <a href="#coders-list" aria-controls="coders-list" role="tab" data-toggle="tab">Coders</a>
-      </li>
+        <li role="presentation" class="active">
+            <a href="#workouts-list" aria-controls="workouts-list" role="tab" data-toggle="tab">Workouts</a>
+        </li>
+
+        <li role="presentation">
+            <a href="#coders-list" aria-controls="coders-list" role="tab" data-toggle="tab">Coders</a>
+        </li>
     </ul>
 
-  <div class="tab-content">
-    <div id="workouts-list" class="list-group tab-pane active" role="tabpanel">
-      {% for workout in workouts %}
-      <a href="#" class="list-group-item">
-        <h4 class="list-group-item-heading">{{workout.workout_title}}</h4>
-        <p class="list-group-item-text">{{workout.workout_text}}</p>
-      </a>
-      {% endfor %}
-      <a class="btn btn-primary btn-lg" href="#" 
-         data-toggle="modal" data-target="#myModal">Create Workout</a>
-    </div>
-    
-    <div id="coders-list" class="list-group tab-pane" role="tabpanel">
-      {% for user in coders %}
-      <a href="#" class="list-group-item"> 
+    <div class="tab-content">
+        <div id="workouts-list" class="list-group tab-pane active" role="tabpanel">
+            {% for workout in workouts %}
+            <a href="#" class="list-group-item">
+                <h4 class="list-group-item-heading">{{workout.workout_title}}</h4>
+                <p class="list-group-item-text">{{workout.workout_text}}</p>
+            </a>
+            {% endfor %}
+            <a class="btn btn-primary btn-lg" href="#" data-toggle="modal" data-target="#myModal">Create Workout</a>
+
+            <!-- <a id="createWorkoutButton"  class="btn btn-primary btn-lg"  href="#">Create Workout</a> -->
+        </div>
+
+        <div id="coders-list" class="list-group tab-pane" role="tabpanel">
+            {% for user in coders %}
+            <a href="#" class="list-group-item"> 
         {{user.first_name}} - {{user.last_name}}
-      </a>
-      {% endfor %}
+      </a> {% endfor %}
+        </div>
     </div>
-  </div>
 
 
-<!-- Trigger the modal with a button -->
-<!-- <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Open Modal</button> -->
 
-<!-- Modal -->
-<div id="myModal" class="modal fade" role="dialog">
-  <div class="modal-dialog">
-    
-    <!-- Modal content-->
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-        <h4 class="modal-title">Create a Workout</h4>
-      </div>
-      <div class="modal-body">
-        <p>Some text in the modal.</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-      </div>
+
+
+
+    <!-- Trigger the modal with a button -->
+    <!-- <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Open Modal</button> -->
+
+    <!-- Modal -->
+    <div id="myModal" class="modal fade" role="dialog"> -->
+        <div class="modal-dialog"> -->
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Create a Workout</h4>
+                </div>
+                <div class="modal-body">
+                    <form class="contact" name="contact">
+                        <div class="input-group">
+                            <span class="input-group-addon" id="basic-addon1">Title</span>
+                            <input type="text" class="form-control" placeholder="Title" aria-describedby="basic-addon1">
+                        </div>
+                        <br/>
+
+                        <div class="form-group">
+                            <label for="workoutDesc">Description:</label>
+                            <textarea class="form-control" rows="5" id="workoutDesc"></textarea>
+                        </div>
+
+                        <div class='form-group'>
+                            <label>Start date time(MM/dd/yyyy hh:mm:ss)</label>
+                              <input type='text' class="form-control" name="startDate" 
+                                     data-format="dd/MM/yyyy hh:mm:ss"/>
+                        </div>
+                        <div class='form-group'>
+                            <label>End date time(MM/dd/yyyy hh:mm:ss)</label>
+                              <input type='text' class="form-control" name="endDate" 
+                                     data-format="dd/MM/yyyy hh:mm:ss"/>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Create It! Yeah</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+
+        </div>
+
     </div>
-  </div>
-</div>
 
+{% endblock %} 
+
+{% block page-scripts %}
+<script type="text/javascript">
+jQuery(document).ready(function(){
+jQuery('#startDateInput').datetimepicker();
+});
+</script>
 
 {% endblock %}
-
