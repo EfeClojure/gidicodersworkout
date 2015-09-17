@@ -9,10 +9,11 @@
             [digest :as digest]))
 
 
+(defonce username-no-exists "That username does NOT exist.")
 (defonce username-exists "That username already exists.")
 (defonce password-no-match "Password does NOT match.")
 
-(defn render-with-cookie [page-response cookie-key cookie-val]
+#_(defn render-with-cookie [page-response cookie-key cookie-val]
   (println "cookie-key : " cookie-key " cookie-val: " cookie-val)
   (-> page-response 
       response 
@@ -24,7 +25,9 @@
 
 
 (defn home-page [user-record]
-  (let [page-response (layout/render "homePage.html" 
+  (layout/render "homePage.html" 
+                 {:user user-record})
+  #_(let [page-response (layout/render "homePage.html" 
                                 {:user user-record})]
     (render-with-cookie page-response
                         "username" (user-record :username))))
@@ -65,7 +68,7 @@
         (layout/render "loginScreen.html"
                        {:auth_error password-no-match}))
       (layout/render "loginScreen.html" 
-                     {:auth_error username-exists}))))
+                     {:auth_error username-no-exists}))))
 
 (defn signUserUp [first-name last-name username 
                   email-add password]
