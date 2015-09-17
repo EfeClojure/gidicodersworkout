@@ -11,9 +11,26 @@
 
 
 
-(defdb the-db (postgres {:db "gidicodersworkoutdb"
+#_(defdb the-db (postgres {:db "gidicodersworkoutdb"
                          :user "postgres"
                          :password "asdffdsa"}))
+
+(defdb the-db 
+  (if (System/getenv "DATABASE_URL")
+    (let [db-uri (java.net.URI. (System/getenv "DATABASE_URL"))
+          user-and-password (clojure.string/split (.getUserInfo db-uri) #":")]
+      {:classname "org.postgresql.Driver"
+       :subprotocol "postgresql"
+       :user (get user-and-password 0)
+       :password (get user-and-password 1) ; may be nil
+       :subname (if (= -1 (.getPort db-uri))
+                  (format "//%s%s" (.getHost db-uri) (.getPath db-uri))
+                  (format "//%s:%s%s" (.getHost db-uri) (.getPort db-uri) (.getPath db-uri)))})
+    (postgres
+     {:db "gidicodersworkoutdb"
+      :user "postgres"
+      :password "asdffdsa"})))
+;;https://gist.github.com/flyingmachine/4004807
 
 
 (declare workouts users languages roles 
