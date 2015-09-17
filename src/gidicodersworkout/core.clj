@@ -62,8 +62,8 @@
   (timbre/info "server started on port:" (:port @http-server)))
 
 (defn -main [& args]
-  #_(cond
+  (cond
     (some #{"migrate" "rollback"} args) (migrations/migrate args)
     :else (start-app args))
-  (migrations/migrate ["migrate"]))
+  #_(migrations/migrate ["migrate"]))
   
