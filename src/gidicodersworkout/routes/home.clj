@@ -96,9 +96,8 @@
       (do 
         (the-db/add-workout (the-user :user_id) title desc start end)
         (home-page the-user))
-      {:status 500 :body  (pr-str ["Hello" :from 'Refresh])})))
-
-
+      {:status 500 :headers {"Content-Type" "text/html"} 
+       :body  (pr-str ["Hello" :from 'Refresh])})))
 
 
 

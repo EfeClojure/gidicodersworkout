@@ -1,6 +1,4 @@
-{% extends "base.html" %} 
-
-{% block content %}
+{% extends "base.html" %} {% block content %}
 <div id="mainBody" class="jumbotron">
     <ul class="nav nav-tabs nav-justified" role="tablist">
         <li role="presentation" class="active">
@@ -14,7 +12,7 @@
 
     <div class="tab-content">
         <div id="myworkouts-list" class="list-group tab-pane active" role="tabpanel">
-            {% for a-workout in my-workouts %}
+            {% for workout in my-workouts %}
             <a href="#" class="list-group-item">
                 <h4 class="list-group-item-heading">{{workout.workout_title}}</h4>
                 <p class="list-group-item-text">{{workout.workout_text}}</p>
@@ -29,21 +27,64 @@
             {% for an-entry in my-entries %}
             <a href="#" class="list-group-item"> {{user.first_name}} - {{user.last_name}}</a> {% endfor %}
         </div>
-        <form method="POST" action="{{servlet-context}}/createWorkout">
-        {% csrf-field %}
-        </form>
+    </div>
+
+
+    <div id="createWorkoutModal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Create a Workout</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="createWorkoutForm" action="/createWorkout" method="POST">
+                        {% csrf-field %}
+                        <div id="workoutTitleDiv" class="input-group">
+                            <!-- <span class="input-group-addon" id="basic-addon1">Title</span> -->
+                            <label for="workoutTitle">Title:</label>
+                            <input type="text" class="form-control" id="workoutTitle" name="title" placeholder="Title" aria-describedby="basic-addon1">
+                            <br/>
+                            <span class="error">This field is required</span>
+                        </div>
+                        <br/>
+
+                        <div id="workoutDescDiv" class="form-group">
+                            <label for="workoutDesc">Description:</label>
+                            <textarea class="form-control" rows="5" id="workoutDesc" name="desc"></textarea>
+                            <span class="error">This field is required</span>
+                        </div>
+
+                        <div id="startDateDiv" class='form-group'>
+                            <label>Start date time(yyyy-MM-dd hh:mm:ss)</label>
+                            <input type='text' class="form-control" id="startDateInput" name="startDateInput" data-format="yyyy-MM-dd hh:mm:ss" />
+                            <span class="error">This field is required</span>
+                        </div>
+
+                        <div id="endDateDiv" class='form-group'>
+                            <label>End date time(yyyy-MM-dd hh:mm:ss)</label>
+                            <input type='text' class="form-control" id="endDateInput" name="endDateInput" data-format="yyyy-MM-dd hh:mm:ss" />
+                            <span class="error">This field is required</span>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="createWorkoutButton">Create It! Yeah</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+            <!-- end of modal-content -->
+        </div>
+
     </div>
 
 </div>
-{% endblock %} 
-
-{% block page-scripts %}
+{% endblock %} {% block page-scripts %}
 <script type="text/javascript">
     var username = "{{user.username}}";
-    var context = "{{servlet-context}}";
-    console.log("The username: " + username);
-    var antiForgeryToken = jQuery('#__anti-forgery-token').attr('value');
-    //console.log("Anti forgery token: " + antiForgeryToken);
 
     function isEmpty(str) {
         return (!str || 0 === str.length);
@@ -52,21 +93,15 @@
     function OnCreateWorkOutClick() {
         jQuery('#showCreateDialogButton').click(function() {
 
-            jQuery.get('customTemplates/createWorkout.snippet.html', function(data) {
-                jQuery('#createWorkoutModal').remove();
+            jQuery('#createWorkoutModal').modal('show');
 
-                jQuery('#mainBody').append(data);
-                jQuery('#createWorkoutModal').modal('show');
-                //console.log("Data Ajaxed!" + data);
+            var now = new Date();
+            //The following is possible because of the date.format.js file
+            var nowAsText = now.format("yyyy-mm-dd hh:MM:ss");
 
-                var now = new Date();
-                //The following is possible because of the date.format.js file
-                var nowAsText = now.format("yyyy-mm-dd hh:MM:ss");
-
-                jQuery('#startDateInput').val(nowAsText);
-                hideErrorFields();
-                OnCreateYeahClicked();
-            }, "text");
+            jQuery('#startDateInput').val(nowAsText);
+            hideErrorFields();
+            OnCreateYeahClicked();
         });
     }
 
@@ -112,22 +147,27 @@
             jQuery('#startDateDiv .error').show();
         }
         if (isEmpty(end)) {
+            errorPresent = true;
             jQuery('#endDateDiv .error').show();
         }
         if (!errorPresent) {
-            // doPost to server
-            jQuery('#createWorkoutForm').attr('action', context + "/createWorkout");
             var hiddenField = '<input type="hidden" name="username" value="{{user.username}}" />';
-            var antiForgeryField = '<input type="hidden" name="__anti-forgery-token" />';
 
-            jQuery('#createWorkoutForm').append(hiddenField).append(antiForgeryField);
-    jQuery('#createWorkoutForm input[name=__anti-forgery-token]').attr('value', antiForgeryToken);
-    var theStartDate = jQuery('#createWorkoutForm input[name=startDateInput]').val();
-    var theEndDate = jQuery('#createWorkoutForm input[name=endDateInput]').val();
+            jQuery('#createWorkoutForm').prepend(hiddenField);
+            var theStartDate = jQuery('#createWorkoutForm input[name=startDateInput]').val();
+            var theEndDate = jQuery('#createWorkoutForm input[name=endDateInput]').val();
     console.log("The start date: " + theStartDate);
     console.log("The end date: " + theEndDate);
 
-    jQuery('#createWorkoutForm').submit();
+    //jQuery('#input[name=startDateInput]').attr('value', "2015-09-20 10:42:18");
+    //jQuery('#input[name=endDateInput]').attr('value', "2015-09-20 11:42:18");
+
+    //theStartDate = jQuery('#createWorkoutForm input[name=startDateInput]').val();
+    //var theEndDate = jQuery('#createWorkoutForm input[name=endDateInput]').val();
+    //console.log("The start date: " + theStartDate);
+    //console.log("The end date: " + theEndDate);
+            
+            jQuery('#createWorkoutForm').submit();
         }
     }
 

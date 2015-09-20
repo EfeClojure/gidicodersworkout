@@ -159,8 +159,16 @@
 
 
 (defn get-workouts []
-  (select workouts
-          (with workout-entries)))
+([]
+ (select workouts
+         (with workout-entries)))
+([the-offset the-limit]
+ (select workouts
+         (with workout-entries)
+         (limit the-limit)
+         (offset the-offset))))
+
+(defn get-workouts)
 
 (defn add-workout [creator-id workout-name workout-text 
                    start-date end-date]
