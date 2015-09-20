@@ -8,32 +8,42 @@
         <h4 class="modal-title">Create a Workout</h4>
       </div>
       <div class="modal-body">
-        <form class="contact" name="contact">
-          <div class="input-group">
-        <span class="input-group-addon" id="basic-addon1">Title</span>
-        <input type="text" class="form-control" placeholder="Title" aria-describedby="basic-addon1">
+        <form id="createWorkoutForm" action="/createWorkout" method="POST" >
+          <div id="workoutTitleDiv" class="input-group">
+            <!-- <span class="input-group-addon" id="basic-addon1">Title</span> -->
+            <label for="workoutTitle">Title:</label>
+            <input type="text" class="form-control" id="workoutTitle" name="title" 
+                   placeholder="Title" aria-describedby="basic-addon1">
+            <br/>            
+            <span class="error">This field is required</span>
           </div>
           <br/>
           
-          <div class="form-group">
+          <div id="workoutDescDiv" class="form-group">
             <label for="workoutDesc">Description:</label>
-            <textarea class="form-control" rows="5" id="workoutDesc"></textarea>
+            <textarea class="form-control" rows="5" id="workoutDesc" name="desc"></textarea>
+            <span class="error">This field is required</span>
           </div>
           
-          <div class='form-group'>
-            <label>Start date time(MM/dd/yyyy hh:mm:ss)</label>
-            <input type='text' class="form-control" name="startDate" id="startDateInput"
-                   data-format="dd/MM/yyyy hh:mm:ss"/>
+          <div id="startDateDiv" class='form-group'>
+            <label>Start date time(yyyy-MM-dd hh:mm:ss)</label>
+            <input type='text' class="form-control" name="startDate" id="startDateInput" name="startDateInput"
+                   data-format="yyyy-MM-dd hh:mm:ss"/>
+            <span class="error">This field is required</span>
           </div>
-          <div class='form-group'>
-            <label>End date time(MM/dd/yyyy hh:mm:ss)</label>
-            <input type='text' class="form-control" name="endDate" id="endDateInput"
-                   data-format="dd/MM/yyyy hh:mm:ss"/>
+          
+          <div id="endDateDiv" class='form-group'>
+            <label>End date time(yyyy-MM-dd hh:mm:ss)</label>
+            <input type='text' class="form-control" name="endDate" id="endDateInput" name="endDateInput"
+                   data-format="yyyy-MM-dd hh:mm:ss"/>
+            <span class="error">This field is required</span>
           </div>
+
         </form>
       </div>
+
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" data-dismiss="modal">Create It! Yeah</button>
+        <button type="button" class="btn btn-primary" id="createWorkoutButton">Create It! Yeah</button>
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
       </div>
     </div><!-- end of modal-content -->

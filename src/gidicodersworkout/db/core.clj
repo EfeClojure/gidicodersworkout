@@ -14,6 +14,7 @@
             Timestamp
             PreparedStatement]))
 
+
 (defonce ^:dynamic *conn* (atom nil))
 
 (conman/bind-connection *conn* "sql/queries.sql")

@@ -6,6 +6,8 @@
             [clojure.java.io :as io]
             [gidicodersworkout.db.dbaccess :as the-db]
             
+            [taoensso.timbre :as timbre :only [trace debug info 
+                                               warn error fatal]]
             [digest :as digest]))
 
 
@@ -25,12 +27,13 @@
 
 
 (defn home-page [user-record]
-  (layout/render "homePage.html" 
-                 {:user user-record})
-  #_(let [page-response (layout/render "homePage.html" 
-                                {:user user-record})]
-    (render-with-cookie page-response
-                        "username" (user-record :username))))
+  (let [user-name (user-record :username)
+        my-workouts (the-db/get-workout-by-username user-name)
+        my-entries (the-db/get-user-workout-entries user-name)]
+    (layout/render "home.html" 
+                   {:user user-record
+                    :my-workouts my-workouts
+                    :my-entries my-entries})))
 
 (defn about-page []
   (layout/render "about.html"))
@@ -85,8 +88,15 @@
 #_(defn view-workout-entry [workouts-entry-id]
   (layout/render "createWorkout.html"))
 
-(defn create-workout []
-  (layout/render "createWorkout.html"))
+(defn create-workout [username title desc start end]
+  (timbre/info "Create workout endpoint reached!!!")
+  
+  (let [the-user (the-db/get-user-by-name username)]
+    (if the-user
+      (do 
+        (the-db/add-workout (the-user :user_id) title desc start end)
+        (home-page the-user))
+      {:status 500 :body  (pr-str ["Hello" :from 'Refresh])})))
 
 
 
@@ -105,7 +115,8 @@
         (signUserUp firstname lastname username 
                     email password))
   
-  (GET "/createWorkout" [] (create-workout)))
+  (POST "/createWorkout" [username title desc startDateInput endDateInput] 
+        (create-workout username title desc startDateInput endDateInput)))
 
 ;; postgres timestamp format
 ;; 2002-12-31 16:00:00

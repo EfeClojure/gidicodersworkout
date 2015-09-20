@@ -61,8 +61,9 @@
   (pk :workout_id)
   (table :workout)
   
-  (entity-fields :workout_title :workout_text 
+  (entity-fields :workout_id :creator_id :workout_title :workout_text 
                  :start_date :end_date :is_active)
+  (belongs-to users {:fk :creator_id})
   (has-many workout-entries)
   
   (prepare (fn [{timestamp :start_date :as v}]
@@ -86,33 +87,36 @@
   (pk :user_id) 
   (table :usermaster)
   
-  (entity-fields :first_name :last_name :email_address 
+  (entity-fields :user_id :first_name :last_name :email_address 
                  :username :password)
 
-  (has-one roles {:fk :role_id}))
+  (has-one roles {:fk :role_id})
+  (has-many workouts)
+  (has-many workout-entries))
 
 (defentity roles 
   (pk :role_id)
   (table :role)
 
-  (entity-fields :role_title)
+  (entity-fields :role_id :role_title)
   (belongs-to users))
 
 (defentity languages
   (pk :language_id)
   (table :language)
  
-  (entity-fields :language_name))
+  (entity-fields :language_id :language_name))
 
 (defentity workout-entries 
   (pk :workout_entry_id)
   (table :workout_entry)
   
-  (entity-fields :source_text :date_sent_in)
+  (entity-fields :workout_entry_id :user_id :source_text 
+                 :date_sent_in :language_id :workout_id)
   
-  (belongs-to workouts)
-  (has-one users)
-  (has-one languages)
+  (belongs-to workouts {:fk :workout_id})
+  (has-one users {:fk :user_id})
+  (has-one languages {:fk :language_id})
 
   (prepare (fn [{timestamp :date_sent_in :as v}]
              (if timestamp
@@ -158,11 +162,13 @@
   (select workouts
           (with workout-entries)))
 
-
-(defn add-workout [workout-name workout-text start-date end-date]
-  (insert workouts (values {:workout_title workout-name 
+(defn add-workout [creator-id workout-name workout-text 
+                   start-date end-date]
+  (insert workouts (values {:creator_id creator-id
+                            :workout_title workout-name 
                             :workout_text workout-text
-                            :start_date start-date :end_date end-date 
+                            :start_date (timestamp-to-lgtime start-date) 
+                            :end_date (timestamp-to-lgtime end-date)
                             :is_active false})))
 
 #_(insert workouts (values {:workout_title "League of Anagram detectives" 
@@ -172,17 +178,21 @@
                           :end_date (tyme-coerce/to-long (tyme/now))
                           :is_active false}))
 
+(defn get-workout-by-username [username]
+  (select workouts 
+          (with users (where {:username username}))))
+
 (defn get-workout-entries [workout-id]
-  (let [the-workout (select workouts
-                            (with workout-entries)
-                            (where {:workout_id workout-id}))]
-    (if (not (empty? the-workout))
-      (first the-workout)
+  (let [the-entries (select workout-entries
+                            (with workouts 
+                                  (where {:workout_id workout-id})))]
+    (if (not (empty? the-entries))
+      the-entries
       nil)))
 
-(defn get-user-workout-entries [user-id]
+(defn get-user-workout-entries [username]
   (let [results (select workout-entries
-                        (with users (where {:user_id user-id})))]
+                        (with users (where {:username username})))]
     (if (not (empty? results))
       results
       nil)))

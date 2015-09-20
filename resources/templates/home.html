@@ -1,14 +1,139 @@
-{% extends "base.html" %}
-{% block content %}
-  <div class="jumbotron">
-    <h1>Welcome to gidicodersworkout</h1>
-    <p>Time to start building your site!</p>
-    <p><a class="btn btn-primary btn-lg" href="http://luminusweb.net">Learn more &raquo;</a></p>
-  </div>
+{% extends "base.html" %} 
 
-  <div class="row">
-    <div class="span12">
-    {{docs|markdown}}
+{% block content %}
+<div id="mainBody" class="jumbotron">
+    <ul class="nav nav-tabs nav-justified" role="tablist">
+        <li role="presentation" class="active">
+            <a href="#myworkouts-list" aria-controls="myworkouts-list" role="tab" data-toggle="tab">My Workouts</a>
+        </li>
+
+        <li role="presentation">
+            <a href="#myentries-list" aria-controls="myentries-list" role="tab" data-toggle="tab">My entries</a>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <div id="myworkouts-list" class="list-group tab-pane active" role="tabpanel">
+            {% for a-workout in my-workouts %}
+            <a href="#" class="list-group-item">
+                <h4 class="list-group-item-heading">{{workout.workout_title}}</h4>
+                <p class="list-group-item-text">{{workout.workout_text}}</p>
+            </a>
+            {% endfor %}
+            <button id="showCreateDialogButton" class="btn btn-primary btn-lg">Create Workout</button>
+            <!-- <a id="createWorkoutButton" class="btn btn-primary btn-lg" href="#"  -->
+            <!--    data-toggle="modal" data-target="#createWorkoutModal">Create Workout</a> -->
+        </div>
+
+        <div id="myentries-list" class="list-group tab-pane" role="tabpanel">
+            {% for an-entry in my-entries %}
+            <a href="#" class="list-group-item"> {{user.first_name}} - {{user.last_name}}</a> {% endfor %}
+        </div>
+        <form method="POST" action="{{servlet-context}}/createWorkout">
+        {% csrf-field %}
+        </form>
     </div>
-  </div>
+
+</div>
+{% endblock %} 
+
+{% block page-scripts %}
+<script type="text/javascript">
+    var username = "{{user.username}}";
+    var context = "{{servlet-context}}";
+    console.log("The username: " + username);
+    var antiForgeryToken = jQuery('#__anti-forgery-token').attr('value');
+    //console.log("Anti forgery token: " + antiForgeryToken);
+
+    function isEmpty(str) {
+        return (!str || 0 === str.length);
+    }
+
+    function OnCreateWorkOutClick() {
+        jQuery('#showCreateDialogButton').click(function() {
+
+            jQuery.get('customTemplates/createWorkout.snippet.html', function(data) {
+                jQuery('#createWorkoutModal').remove();
+
+                jQuery('#mainBody').append(data);
+                jQuery('#createWorkoutModal').modal('show');
+                //console.log("Data Ajaxed!" + data);
+
+                var now = new Date();
+                //The following is possible because of the date.format.js file
+                var nowAsText = now.format("yyyy-mm-dd hh:MM:ss");
+
+                jQuery('#startDateInput').val(nowAsText);
+                hideErrorFields();
+                OnCreateYeahClicked();
+            }, "text");
+        });
+    }
+
+    function hideErrorFields() {
+        jQuery('#workoutTitleDiv .error').hide();
+        jQuery('#workoutDescDiv .error').hide();
+
+        jQuery('#startDateDiv .error').hide();
+        jQuery('#endDateDiv .error').hide();
+    }
+
+    function OnCreateYeahClicked() {
+        jQuery('#createWorkoutButton').click(function(e) {
+            e.preventDefault();
+            var titleText = jQuery('#workoutTitle').val();
+            var descText = jQuery('#workoutDesc').val();
+
+            var startDate = jQuery('#startDateInput').val();
+            var endDate = jQuery('#endDateInput').val();
+
+            validateWorkoutData(titleText, descText, startDate, endDate);
+        });
+    }
+
+    function validateWorkoutData(title, desc, start, end) {
+        var errorPresent = false;
+
+        var dateOkRegex = /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/;
+        var startDateOk = dateOkRegex.test(start);
+        var endDateOk = dateOkRegex.test(end);
+        //console.log("startDateOk: " + startDateOk + ", endDateOk: " + endDateOk);
+
+        if (isEmpty(title)) {
+            errorPresent = true;
+            jQuery('#workoutTitleDiv .error').show();
+        }
+        if (isEmpty(desc)) {
+            errorPresent = true;
+            jQuery('#workoutDescDiv .error').show();
+        }
+        if (isEmpty(start)) {
+            errorPresent = true;
+            jQuery('#startDateDiv .error').show();
+        }
+        if (isEmpty(end)) {
+            jQuery('#endDateDiv .error').show();
+        }
+        if (!errorPresent) {
+            // doPost to server
+            jQuery('#createWorkoutForm').attr('action', context + "/createWorkout");
+            var hiddenField = '<input type="hidden" name="username" value="{{user.username}}" />';
+            var antiForgeryField = '<input type="hidden" name="__anti-forgery-token" />';
+
+            jQuery('#createWorkoutForm').append(hiddenField).append(antiForgeryField);
+    jQuery('#createWorkoutForm input[name=__anti-forgery-token]').attr('value', antiForgeryToken);
+    var theStartDate = jQuery('#createWorkoutForm input[name=startDateInput]').val();
+    var theEndDate = jQuery('#createWorkoutForm input[name=endDateInput]').val();
+    console.log("The start date: " + theStartDate);
+    console.log("The end date: " + theEndDate);
+
+    jQuery('#createWorkoutForm').submit();
+        }
+    }
+
+    jQuery(document).ready(function() {
+        OnCreateWorkOutClick();
+    });
+</script>
+
 {% endblock %}
