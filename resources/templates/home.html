@@ -1,6 +1,10 @@
 {% extends "base.html" %} {% block content %}
 <div id="mainBody" class="jumbotron">
     <ul class="nav nav-tabs nav-justified" role="tablist">
+        <li role="presentation">
+            <a href="#allworkouts-list" aria-controls="allworkouts-list" role="tab" data-toggle="tab">All Workouts</a>
+        </li>
+
         <li role="presentation" class="active">
             <a href="#myworkouts-list" aria-controls="myworkouts-list" role="tab" data-toggle="tab">My Workouts</a>
         </li>
@@ -11,11 +15,24 @@
     </ul>
 
     <div class="tab-content">
+        <div id="allworkouts-list" class="list-group tab-pane" role="tabpanel">
+            {% for workout in all-workouts %}
+            <a href="#" class="list-group-item">
+                <h4 class="list-group-item-heading">{{workout.workout_title}}</h4>
+                <p class="list-group-item-text">{{workout.workout_text | ellipsify}}</p>
+
+                <h1 style='display:none'>{{workout.workout_text}}</h1>
+                <h2 style='display:none'>{{workout.start_date}}</h2>
+                <h3 style='display:none'>{{workout.end_date}}</h3>
+            </a>
+            {% endfor %}
+        </div>
+
         <div id="myworkouts-list" class="list-group tab-pane active" role="tabpanel">
             {% for workout in my-workouts %}
             <a href="#" class="list-group-item">
                 <h4 class="list-group-item-heading">{{workout.workout_title}}</h4>
-                <p class="list-group-item-text">{{workout.workout_text}}</p>
+                <p class="list-group-item-text">{{workout.workout_text | ellipsify}}</p>
             </a>
             {% endfor %}
             <button id="showCreateDialogButton" class="btn btn-primary btn-lg">Create Workout</button>
@@ -59,13 +76,13 @@
 
                         <div id="startDateDiv" class='form-group'>
                             <label>Start date time(yyyy-MM-dd hh:mm:ss)</label>
-                            <input type='text' class="form-control" id="startDateInput" name="startDateInput" data-format="yyyy-MM-dd hh:mm:ss" />
+                            <input type='text' class="form-control" name="startDateInput" data-format="yyyy-MM-dd hh:mm:ss" />
                             <span class="error">This field is required</span>
                         </div>
 
                         <div id="endDateDiv" class='form-group'>
                             <label>End date time(yyyy-MM-dd hh:mm:ss)</label>
-                            <input type='text' class="form-control" id="endDateInput" name="endDateInput" data-format="yyyy-MM-dd hh:mm:ss" />
+                            <input type='text' class="form-control" name="endDateInput" data-format="yyyy-MM-dd hh:mm:ss" />
                             <span class="error">This field is required</span>
                         </div>
                     </form>
@@ -86,6 +103,13 @@
 <script type="text/javascript">
     var username = "{{user.username}}";
 
+//    function ellipsify(theText) {
+//      if(theText.length > 15) {
+//        return theText.substring(0, 12) + "...";
+//      } else 
+//        return theText;
+//    }
+
     function isEmpty(str) {
         return (!str || 0 === str.length);
     }
@@ -99,7 +123,7 @@
             //The following is possible because of the date.format.js file
             var nowAsText = now.format("yyyy-mm-dd hh:MM:ss");
 
-            jQuery('#startDateInput').val(nowAsText);
+            jQuery('#createWorkoutModal input[name=startDateInput]').val(nowAsText);
             hideErrorFields();
             OnCreateYeahClicked();
         });
@@ -119,9 +143,10 @@
             var titleText = jQuery('#workoutTitle').val();
             var descText = jQuery('#workoutDesc').val();
 
-            var startDate = jQuery('#startDateInput').val();
-            var endDate = jQuery('#endDateInput').val();
+            var startDate = jQuery('input[name=startDateInput]').val();
+            var endDate = jQuery('input[name=endDateInput]').val();
 
+            //console.log("Start: " + startDate + ", endDate: " + endDate);
             validateWorkoutData(titleText, descText, startDate, endDate);
         });
     }
@@ -153,26 +178,60 @@
         if (!errorPresent) {
             var hiddenField = '<input type="hidden" name="username" value="{{user.username}}" />';
 
-            jQuery('#createWorkoutForm').prepend(hiddenField);
-            var theStartDate = jQuery('#createWorkoutForm input[name=startDateInput]').val();
-            var theEndDate = jQuery('#createWorkoutForm input[name=endDateInput]').val();
-    console.log("The start date: " + theStartDate);
-    console.log("The end date: " + theEndDate);
-
-    //jQuery('#input[name=startDateInput]').attr('value', "2015-09-20 10:42:18");
-    //jQuery('#input[name=endDateInput]').attr('value', "2015-09-20 11:42:18");
-
-    //theStartDate = jQuery('#createWorkoutForm input[name=startDateInput]').val();
-    //var theEndDate = jQuery('#createWorkoutForm input[name=endDateInput]').val();
-    //console.log("The start date: " + theStartDate);
-    //console.log("The end date: " + theEndDate);
-            
-            jQuery('#createWorkoutForm').submit();
+    jQuery('#createWorkoutForm').prepend(hiddenField);
+    var theStartDate = jQuery('#createWorkoutForm input[name=startDateInput]').val();
+    var theEndDate = jQuery('#createWorkoutForm input[name=endDateInput]').val();
+    
+    jQuery('#createWorkoutForm').submit();
         }
     }
 
+function forWorkoutClicked() {
+//jQuery('#allworkouts-list .list-group-item:even')
+//.css(
+//    {'background-color': '#dddddd', 'color': '#666666'}
+//);
+jQuery('#allworkouts-list .list-group-item').each(function(i){
+    //var $this = $(this);
+    var aWorkoutDiv = $(this);
+    aWorkoutDiv.click(function() {
+    console.log("a list item clicked.");
+    var workoutTitle = $(this).find('h4').text();
+    var workoutDesc = $(this).find('h1').text();
+    var workoutStart = $(this).find('h2').text();
+    var workoutEnd = $(this).find('h3').text();
+
+    console.log("Workout title: " + workoutTitle + ", workout desc: " + workoutDesc
+    + ", start: " + workoutStart + ", end: " + workoutEnd);
+    
+    //----
+    jQuery.get('customTemplates/viewWorkout.html', function(data) {
+    jQuery('#viewWorkoutModal').remove();
+    
+    jQuery('#mainBody').append(data);
+    jQuery('#viewWorkoutModal').modal('show');
+    //console.log("Data Ajaxed!" + data);
+    
+    jQuery('#viewWorkoutModal h4').text(workoutTitle);
+
+    jQuery('#viewWorkoutModal').find('textarea[name=workoutDesc]').text(workoutDesc);
+    jQuery('#viewWorkoutModal').find('input[name=startDateInput]').val(workoutStart);
+    jQuery('#viewWorkoutModal').find('input[name=endDateInput]').val(workoutEnd);
+
+    jQuery('#viewWorkoutModal input[type=text], #viewWorkoutModal textarea').prop('readonly', true);
+
+    //OnCreateYeahClicked();
+    }, "text");
+});
+});
+
+}
+
+
     jQuery(document).ready(function() {
         OnCreateWorkOutClick();
+
+        forWorkoutClicked();
     });
 </script>
 

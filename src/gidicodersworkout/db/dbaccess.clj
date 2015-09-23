@@ -185,6 +185,12 @@
                           :end_date (tyme-coerce/to-long (tyme/now))
                           :is_active false}))
 
+(defn get-workout-by-id [workout-id]
+  (select workouts 
+          (with users)
+          (where {:workout_id workout-id})))
+
+
 (defn get-workout-by-username [username]
   (select workouts 
           (with users (where {:username username}))))

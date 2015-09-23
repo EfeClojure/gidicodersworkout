@@ -31,7 +31,8 @@
                  
                  [clj-time "0.11.0"]
                  [clj-http "1.0.1"]
-                 [digest "1.4.4"]]
+                 [digest "1.4.4"]
+                 [org.clojure/data.json "0.2.6"]]
 
   :min-lein-version "2.0.0"
   :uberjar-name "gidicodersworkout.jar"

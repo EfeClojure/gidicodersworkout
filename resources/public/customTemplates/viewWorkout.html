@@ -1,0 +1,40 @@
+<div id="viewWorkoutModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">...</h4>
+      </div>
+
+      <div id="viewWorkoutDiv" class="modal-body">
+          <div id="workoutDescDiv" class="form-group">
+            <label for="workoutDesc">Description:</label>
+            <textarea class="form-control" rows="5" name="workoutDesc"></textarea>
+          </div>
+          
+          <div id="startDateDiv" class='form-group'>
+            <label>Start date time</label>
+            <input type='text' class="form-control" name="startDateInput"
+                   data-format="yyyy-MM-dd hh:mm:ss" />
+          </div>
+          
+          <div id="endDateDiv" class='form-group'>
+            <label>End date time</label>
+            <input type='text' class="form-control" name="endDateInput"
+                   data-format="yyyy-MM-dd hh:mm:ss" />
+          </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" 
+                id="createSubmissionButton">Make submission</button>
+        <button type="button" class="btn btn-default" 
+                data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- end of modal-content -->
+    
+  </div>
+  
+</div>

@@ -8,12 +8,18 @@
             
             [taoensso.timbre :as timbre :only [trace debug info 
                                                warn error fatal]]
-            [digest :as digest]))
+            [selmer.filters :as sel-fils]
+            [digest :as digest]
+            [clojure.data.json :as json]))
 
 
 (defonce username-no-exists "That username does NOT exist.")
 (defonce username-exists "That username already exists.")
 (defonce password-no-match "Password does NOT match.")
+
+(sel-fils/add-filter! :ellipsify 
+                      #(if (> (count %) 3) 
+                         (.substring % 0 3) %))
 
 #_(defn render-with-cookie [page-response cookie-key cookie-val]
   (println "cookie-key : " cookie-key " cookie-val: " cookie-val)
@@ -29,37 +35,26 @@
 (defn home-page [user-record]
   (let [user-name (user-record :username)
         my-workouts (the-db/get-workout-by-username user-name)
-        my-entries (the-db/get-user-workout-entries user-name)]
+        my-entries (the-db/get-user-workout-entries user-name)
+        all-workouts (the-db/get-workouts)]
     (layout/render "home.html" 
                    {:user user-record
+                    :all-workouts all-workouts
                     :my-workouts my-workouts
                     :my-entries my-entries})))
 
-(defn about-page []
-  (layout/render "about.html"))
+(defn get-workout-details [workout-id] 
+  (let [the-workout (the-db/get-workout-by-id workout-id)]
+    (if (not (empty? the-workout))
+      {:status 200 :body (json/write-str (first the-workout))}
+      {:status 200 :body ""})))
 
 
 (defn index-page [the-request]
-  (let [the-cookies (:cookies the-request)
-        the-coders (the-db/get-users)
+  (let [the-coders (the-db/get-users)
         the-workouts (the-db/get-workouts)]
-    (if (empty? the-cookies)
-      (layout/render "index.html" {:coders the-coders 
-                                   :workouts the-workouts})
-      (let [username-cookie (the-cookies "username")]
-        (if username-cookie
-          (let [the-user (the-db/get-user-by-name username-cookie)]
-            (if (empty? the-user)
-              (do (println "Couldn't find user with username: " username-cookie)
-                  (layout/render "index.html" {:coders the-coders
-                                               :workouts the-workouts}))
-              (do 
-                (println "Got the user with username: " username-cookie) 
-                (home-page the-user))))
-          (do (println "No cookies with :username key")
-            (layout/render "index.html" 
-                           {:coders the-coders
-                            :workouts the-workouts})))))))
+    (layout/render "index.html" {:coders the-coders 
+                                 :workouts the-workouts})))
 
 
 (defn logUserIn [req username password]
@@ -100,6 +95,10 @@
        :body  (pr-str ["Hello" :from 'Refresh])})))
 
 
+(defn about-page []
+  (layout/render "about.html"))
+
+
 
 (defroutes home-routes
   (GET "/" [] (fn [req] (index-page req)))
@@ -115,7 +114,8 @@
                     email password))
   
   (POST "/createWorkout" [username title desc startDateInput endDateInput] 
-        (create-workout username title desc startDateInput endDateInput)))
+        (create-workout username title desc startDateInput endDateInput))
+  (GET "/getWorkout" [workoutId] (get-workout-details workoutId)))
 
 ;; postgres timestamp format
 ;; 2002-12-31 16:00:00
