@@ -21,6 +21,7 @@
                 <h4 class="list-group-item-heading">{{workout.workout_title}}</h4>
                 <p class="list-group-item-text">{{workout.workout_text | ellipsify}}</p>
 
+                <h0 style='display:none'>{{workout.workout_id}}</h0>
                 <h1 style='display:none'>{{workout.workout_text}}</h1>
                 <h2 style='display:none'>{{workout.start_date}}</h2>
                 <h3 style='display:none'>{{workout.end_date}}</h3>
@@ -102,13 +103,13 @@
 {% endblock %} {% block page-scripts %}
 <script type="text/javascript">
     var username = "{{user.username}}";
-
-//    function ellipsify(theText) {
-//      if(theText.length > 15) {
-//        return theText.substring(0, 12) + "...";
-//      } else 
-//        return theText;
-//    }
+    var userId = "{{user.user_id}}";
+    //    function ellipsify(theText) {
+    //      if(theText.length > 15) {
+    //        return theText.substring(0, 12) + "...";
+    //      } else 
+    //        return theText;
+    //    }
 
     function isEmpty(str) {
         return (!str || 0 === str.length);
@@ -147,6 +148,7 @@
             var endDate = jQuery('input[name=endDateInput]').val();
 
             //console.log("Start: " + startDate + ", endDate: " + endDate);
+            hideErrorFields();
             validateWorkoutData(titleText, descText, startDate, endDate);
         });
     }
@@ -178,54 +180,62 @@
         if (!errorPresent) {
             var hiddenField = '<input type="hidden" name="username" value="{{user.username}}" />';
 
-    jQuery('#createWorkoutForm').prepend(hiddenField);
-    var theStartDate = jQuery('#createWorkoutForm input[name=startDateInput]').val();
-    var theEndDate = jQuery('#createWorkoutForm input[name=endDateInput]').val();
-    
-    jQuery('#createWorkoutForm').submit();
+            jQuery('#createWorkoutForm').prepend(hiddenField);
+            var theStartDate = jQuery('#createWorkoutForm input[name=startDateInput]').val();
+            var theEndDate = jQuery('#createWorkoutForm input[name=endDateInput]').val();
+
+            jQuery('#createWorkoutForm').submit();
         }
     }
 
-function forWorkoutClicked() {
-//jQuery('#allworkouts-list .list-group-item:even')
-//.css(
-//    {'background-color': '#dddddd', 'color': '#666666'}
-//);
-jQuery('#allworkouts-list .list-group-item').each(function(i){
-    //var $this = $(this);
-    var aWorkoutDiv = $(this);
-    aWorkoutDiv.click(function() {
-    console.log("a list item clicked.");
-    var workoutTitle = $(this).find('h4').text();
-    var workoutDesc = $(this).find('h1').text();
-    var workoutStart = $(this).find('h2').text();
-    var workoutEnd = $(this).find('h3').text();
+    function forWorkoutClicked() {
+        //jQuery('#allworkouts-list .list-group-item:even')
+        //.css(
+        //    {'background-color': '#dddddd', 'color': '#666666'}
+        //);
+        jQuery('#allworkouts-list .list-group-item').each(function(i) {
+            //var $this = $(this);
+            var aWorkoutDiv = $(this);
+            aWorkoutDiv.click(function() {
+                console.log("a list item clicked.");
 
-    console.log("Workout title: " + workoutTitle + ", workout desc: " + workoutDesc
-    + ", start: " + workoutStart + ", end: " + workoutEnd);
+                var workoutId = $(this).find('h0').text();
+                var workoutTitle = $(this).find('h4').text();
+                var workoutDesc = $(this).find('h1').text();
+                var workoutStart = $(this).find('h2').text();
+                var workoutEnd = $(this).find('h3').text();
+                console.log("Workout title: " + workoutTitle + ", workout desc: " + workoutDesc 
+                             + ", start: " + workoutStart + ", end: " + workoutEnd);
     
-    //----
-    jQuery.get('customTemplates/viewWorkout.html', function(data) {
-    jQuery('#viewWorkoutModal').remove();
-    
-    jQuery('#mainBody').append(data);
-    jQuery('#viewWorkoutModal').modal('show');
-    //console.log("Data Ajaxed!" + data);
-    
-    jQuery('#viewWorkoutModal h4').text(workoutTitle);
+                //----
+                jQuery.get('customTemplates/viewWorkout.html', function(data) {
+                    jQuery('#viewWorkoutModal').remove();
 
-    jQuery('#viewWorkoutModal').find('textarea[name=workoutDesc]').text(workoutDesc);
-    jQuery('#viewWorkoutModal').find('input[name=startDateInput]').val(workoutStart);
-    jQuery('#viewWorkoutModal').find('input[name=endDateInput]').val(workoutEnd);
+                    jQuery('#mainBody').append(data);
+                    jQuery('#viewWorkoutModal').modal('show');
+                    //console.log("Data Ajaxed!" + data);
 
-    jQuery('#viewWorkoutModal input[type=text], #viewWorkoutModal textarea').prop('readonly', true);
+                    jQuery('#viewWorkoutModal h4').text(workoutTitle);
 
-    //OnCreateYeahClicked();
-    }, "text");
-});
-});
+                    jQuery('#viewWorkoutModal').find('textarea[name=workoutDesc]').text(workoutDesc);
+                    jQuery('#viewWorkoutModal').find('input[name=startDateInput]').val(workoutStart);
+                    jQuery('#viewWorkoutModal').find('input[name=endDateInput]').val(workoutEnd);
 
-}
+                    jQuery('#viewWorkoutModal input[type=text], #viewWorkoutModal textarea').prop('readonly', true);
+
+                    jQuery('#createSubmissionButton').click(function() {
+                        var redirectUrl = context + "/submissionPage?workoutId=" + workoutId 
+                                          + "&userId=" + userId;
+                        console.log("Redirect url: " + redirectUrl);
+
+                        window.location.href = redirectUrl;
+                    });
+                    //OnCreateYeahClicked();
+                }, "text");
+            });
+        });
+
+    }
 
 
     jQuery(document).ready(function() {

@@ -47,7 +47,6 @@
                        (tyme-coerce/from-long lg-time)))
 
 (defn timestamp-to-lgtime [the-timestamp]
-  #_(tyme-format/parse postgres-timestamp the-timestamp)
   (tyme-coerce/to-long the-timestamp))
 
 (defn to-Date-Time [the-lg-time]
@@ -57,6 +56,8 @@
   (tyme-coerce/to-long the-Date-Time))
 
 
+;;; Entity definitions
+
 (defentity workouts 
   (pk :workout_id)
   (table :workout)
@@ -64,24 +65,7 @@
   (entity-fields :workout_id :creator_id :workout_title :workout_text 
                  :start_date :end_date :is_active)
   (belongs-to users {:fk :creator_id})
-  (has-many workout-entries)
-  
-  (prepare (fn [{timestamp :start_date :as v}]
-             (if timestamp
-               (assoc v :start_date (.toString (to-timestamp timestamp)) )
-               v)))
-  (transform (fn [{timestamp :start_date :as v}]
-               (if timestamp
-                 (assoc v :start_date (timestamp-to-lgtime timestamp))
-                 v)))
-  (prepare (fn [{timestamp :end_date :as v}]
-             (if timestamp
-               (assoc v :end_date (.toString (to-timestamp timestamp)))
-               v)))
-  (transform (fn [{timestamp :end_date :as v}]
-               (if timestamp
-                 (assoc v :end_date (timestamp-to-lgtime timestamp))
-                 v))))
+  (has-many workout-entries))
 
 (defentity users
   (pk :user_id) 
@@ -116,18 +100,12 @@
   
   (belongs-to workouts {:fk :workout_id})
   (has-one users {:fk :user_id})
-  (has-one languages {:fk :language_id})
+  (has-one languages {:fk :language_id}))
 
-  (prepare (fn [{timestamp :date_sent_in :as v}]
-             (if timestamp
-               (assoc v :date_sent (to-timestamp timestamp))
-               v)))
-  (transform (fn [{timestamp :date_sent_in :as v}]
-               (if timestamp
-                 (assoc v :date_sent (timestamp-to-lgtime timestamp))
-                 v))))
+;; End of entity definitions
 
-;; -- 
+
+;; -- Database access utility functions
 
 (defn get-users []
   (let [the-coders (select users 
@@ -138,7 +116,7 @@
 
 (defn get-user-by-id [the-user-id]
   (let [results (select users (with roles)
-                        (where {:user_id the-user-id}))]
+                        (where {:user_id (Integer/parseInt the-user-id)}))]
     (if (not (empty? results))
       (first results)
       nil)))
@@ -186,9 +164,13 @@
                           :is_active false}))
 
 (defn get-workout-by-id [workout-id]
-  (select workouts 
-          (with users)
-          (where {:workout_id workout-id})))
+ (let [results (select workouts
+                       (with users)
+                       (where {:workout_id 
+                               (Integer/parseInt workout-id)}))]
+   (if (not (empty? results))
+     (first results)
+     nil)))
 
 
 (defn get-workout-by-username [username]

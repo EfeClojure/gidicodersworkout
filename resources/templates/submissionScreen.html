@@ -1,0 +1,102 @@
+{% extends "base.html" %} {% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <div class="panel panel-login">
+                <div class="panel-heading">
+                    <div class="row">
+                      <label href="#" class="active" id="login-form-link">Submission details</label>
+                    </div>
+                </div>
+
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <form action="{{servlet-context}}/" method="POST" role="form">
+                                {% csrf-field %}
+                                <input type="hidden" name="workoutId" value="{{the_workout.workout_id}}" />
+                                <input type="hidden" name="userId" value="{{the_submiitter.user_id}}" />
+                                
+                                <div class="form-group">
+                                  <label for="workoutName">Workout title:</label>
+                                  <input id="workoutName" tabindex="1" class="form-control"  
+                                         type="text" value="{{the_workout.workout_title}}">
+                                </div>
+                                
+                                <div class="form-group">
+                                  <label for="submitterName">Submitter name:</label>
+                                  <input id="submitterName" tabindex="1" class="form-control"  
+                                         type="text" value="{{the_submitter.first_name}} {{the_submitter.last_name}}">
+                                </div>
+                                
+                                <div class="input-group">                                            
+                                  <input type="textBox" id="datebox" class="form-control"></input>
+                                  <div class="input-group-btn">
+                                    <button type="button" class="btn dropdown-toggle" data-toggle="dropdown">
+                                      Language type select<span class="caret"></span>
+                                    </button>
+                                    <ul id="demolist" class="dropdown-menu">
+                                      <li><a href="#">Java</a></li>
+                                      <li><a href="#">Python</a></li>
+                                      <li><a href="#">Clojure</a></li>
+                                      <li><a href="#">Php</a></li>
+                                      <li><a href="#">Javascript</a></li>
+                                    </ul>
+                                  </div>
+                                </div>
+                                
+                                <!-- <div class="dropdown"> -->
+                                <!--   <input type="textbox" ID="languageSelect" Class="form-control" style="display: none"></input> -->
+                                <!--   <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1"  -->
+                                <!--           data-toggle="dropdown" aria-haspopup="true" aria-expanded="true"> -->
+                                <!--     Language select -->
+                                <!--     <span class="caret"></span> -->
+                                <!--   </button> -->
+                                <!--   <ul class="dropdown-menu" aria-labelledby="dropdownMenu1"> -->
+                                <!--     <li><a href="#">Action</a></li> -->
+                                <!--     <li><a href="#">Another action</a></li> -->
+                                <!--     <li><a href="#">Something else here</a></li> -->
+                                <!--     <li><a href="#">Separated link</a></li> -->
+                                <!--   </ul> -->
+                                <!-- </div> -->
+                                <br/>
+
+                                <div class="form-group">
+                                  <label for="workoutDesc">Source text:</label>
+                                  <textarea class="form-control" rows="5" id="entrySource" name="entrySource"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <div class="row">
+                                        <div class="col-sm-6 col-sm-offset-3">
+                                            <input type="submit" name="entry-submit" id="entry-submit" tabindex="4" 
+                                                   class="form-control btn btn-register" value="Make entry">
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- <link href="{{servlet-context}}/css/bootstrap-theme.min.css" rel="stylesheet"> -->
+{% style "/css/loginScreen.css" %}
+
+<!-- <link href="{{servlet-context}}/css/loginScreen.css" rel="stylesheet"> -->
+
+{% endblock %} {% block page-scripts %}
+<script type="text/javascript">
+  jQuery(document).ready(function() {
+  jQuery('#demolist li a').on('click', function(){
+  jQuery('#datebox').val($(this).html());
+  });
+  
+  jQuery('#submitterName, #workoutName').prop('readonly', true);
+  });
+</script>
+
+{% endblock %}

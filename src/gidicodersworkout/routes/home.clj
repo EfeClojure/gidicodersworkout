@@ -1,7 +1,7 @@
 (ns gidicodersworkout.routes.home
   (:require [gidicodersworkout.layout :as layout]
             [compojure.core :refer [defroutes GET POST]]
-            [ring.util.http-response :refer [ok]]
+            [ring.util.http-response :refer [ok found]]
             [ring.util.response :refer [response]]
             [clojure.java.io :as io]
             [gidicodersworkout.db.dbaccess :as the-db]
@@ -16,10 +16,6 @@
 (defonce username-no-exists "That username does NOT exist.")
 (defonce username-exists "That username already exists.")
 (defonce password-no-match "Password does NOT match.")
-
-(sel-fils/add-filter! :ellipsify 
-                      #(if (> (count %) 3) 
-                         (.substring % 0 3) %))
 
 #_(defn render-with-cookie [page-response cookie-key cookie-val]
   (println "cookie-key : " cookie-key " cookie-val: " cookie-val)
@@ -46,9 +42,23 @@
 (defn get-workout-details [workout-id] 
   (let [the-workout (the-db/get-workout-by-id workout-id)]
     (if (not (empty? the-workout))
-      {:status 200 :body (json/write-str (first the-workout))}
+      {:status 200 :headers {"Content-Type" "application/json"}  
+       :body (json/write-str (first the-workout))}
       {:status 200 :body ""})))
 
+(defn submission-page [workout-id user-id]
+  (let [the-workout (the-db/get-workout-by-id workout-id)
+        the-submitter (the-db/get-user-by-id user-id)]
+    (if (not-empty the-workout)
+      (layout/render "submissionScreen.html" 
+                     {:the_workout the-workout 
+                      :the_submitter the-submitter})
+      (layout/render "submissionScreen.html"  {}))))
+
+
+(defn accept-submission [workoutId userId sourceText]
+  (let [now ""]
+    true))
 
 (defn index-page [the-request]
   (let [the-coders (the-db/get-users)
@@ -115,7 +125,8 @@
   
   (POST "/createWorkout" [username title desc startDateInput endDateInput] 
         (create-workout username title desc startDateInput endDateInput))
-  (GET "/getWorkout" [workoutId] (get-workout-details workoutId)))
+  (GET "/getWorkout" [workoutId] (get-workout-details workoutId))
+  (GET "/submissionPage" [workoutId userId] (submission-page workoutId userId)))
 
 ;; postgres timestamp format
 ;; 2002-12-31 16:00:00
