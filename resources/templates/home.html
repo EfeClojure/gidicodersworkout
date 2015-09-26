@@ -43,7 +43,11 @@
 
         <div id="myentries-list" class="list-group tab-pane" role="tabpanel">
             {% for an-entry in my-entries %}
-            <a href="#" class="list-group-item"> {{user.first_name}} - {{user.last_name}}</a> {% endfor %}
+            <a href="#" class="list-group-item">
+                <h4 class="list-group-item-heading">{{an-entry.workout_title}}</h4>
+                <p class="list-group-item-text"><i>{{an-entry.date_sent_in}}</i></p>
+            </a>
+            {% endfor %}
         </div>
     </div>
 

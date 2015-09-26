@@ -53,6 +53,7 @@
   (tyme-coerce/from-long the-lg-time))
   
 (defn to-long-time [the-Date-Time]
+  "Takes a DateTime object to get the long milliseconds since the epoch"
   (tyme-coerce/to-long the-Date-Time))
 
 
@@ -65,7 +66,16 @@
   (entity-fields :workout_id :creator_id :workout_title :workout_text 
                  :start_date :end_date :is_active)
   (belongs-to users {:fk :creator_id})
-  (has-many workout-entries))
+  (has-many workout-entries)
+
+  (transform (fn [{timestamp :start_date :as v}]
+               (if timestamp 
+                 (assoc v :start_date (timestamp-to-lgtime timestamp))
+                 v)))
+  (transform (fn [{timestamp :end_date :as v}]
+               (if timestamp 
+                 (assoc v :end_date (timestamp-to-lgtime timestamp))
+                 v))))
 
 (defentity users
   (pk :user_id) 
@@ -100,7 +110,12 @@
   
   (belongs-to workouts {:fk :workout_id})
   (has-one users {:fk :user_id})
-  (has-one languages {:fk :language_id}))
+  (has-one languages {:fk :language_id})
+  
+  (transform (fn [{timestamp :date_sent_in :as v}]
+               (if timestamp 
+                 (assoc v :date_sent_in (timestamp-to-lgtime timestamp))
+                 v))))
 
 ;; End of entity definitions
 
@@ -178,28 +193,52 @@
           (with users (where {:username username}))))
 
 (defn get-workout-entries [workout-id]
-  (let [the-entries (select workout-entries
-                            (with workouts 
-                                  (where {:workout_id workout-id})))]
+  (let [workoutIdAsInt (Integer/parseInt workout-id)
+        the-entries (select workout-entries
+                            (where {:workout_id workoutIdAsInt}))]
     (if (not (empty? the-entries))
       the-entries
       nil)))
 
-(defn get-user-workout-entries [username]
+(defn get-user-entries [username]
   (let [results (select workout-entries
-                        (with users (where {:username username})))]
+                        (with workouts)
+                        (with users (where {:username username}))
+                        (order :date_sent_in :ASC))]
     (if (not (empty? results))
-      results
+      (map #(assoc % :date_sent_in 
+                   (to-timestamp (% :date_sent_in))) 
+           results)
       nil)))
 
 (defn get-workout-entry [workout-entry-id]
   (let [results (select workout-entries
                         (with users)
-                        (where {:workout_entry_id workout-entry-id}))]
+                        (where {:workout_entry_id 
+                                (Integer/parseInt workout-entry-id)}))]
     (if (not (empty? results))
       (first results)
       nil)))
 
+(defn user-submitted? [workout-id user-id]
+  (let [workoutIdAsInt (Integer/parseInt workout-id)
+        userIdAsInt (Integer/parseInt user-id)
+        the-entries (select workout-entries
+                            (with users (where {:user_id userIdAsInt}))
+                            (with workouts 
+                                  (where {:workout_id workoutIdAsInt})))]
+    (if (empty? the-entries)
+      false true)))
+
+(defn add-workout-entry [workoutId submitter-id
+                         language-type-id source-text]
+  (insert workout-entries (values {:workout_id (Integer/parseInt workoutId)
+                                   :user_id (Integer/parseInt submitter-id)
+                                   :source_text source-text
+                                   :language_id language-type-id                                   
+                                   :date_sent_in (-> (tyme/now)
+                                                     to-long-time
+                                                     to-timestamp)})))
 
 (defn get-languages []
   (select languages))

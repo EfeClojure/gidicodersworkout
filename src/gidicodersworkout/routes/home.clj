@@ -31,8 +31,9 @@
 (defn home-page [user-record]
   (let [user-name (user-record :username)
         my-workouts (the-db/get-workout-by-username user-name)
-        my-entries (the-db/get-user-workout-entries user-name)
+        my-entries (the-db/get-user-entries user-name)
         all-workouts (the-db/get-workouts)]
+    (timbre/info "Got username: " user-name my-entries)
     (layout/render "home.html" 
                    {:user user-record
                     :all-workouts all-workouts
@@ -55,10 +56,27 @@
                       :the_submitter the-submitter})
       (layout/render "submissionScreen.html"  {}))))
 
+(defn acc-lang [lang]
+  (let [the-langs (the-db/get-languages)
+        found (for [langs the-langs
+                    :when (.equalsIgnoreCase (langs :language_name) 
+                                             lang)]
+                (langs :language_id))]
+    (if (not (empty? found))
+      (first found)
+      nil)))
 
-(defn accept-submission [workoutId userId sourceText]
-  (let [now ""]
-    true))
+(defn accept-submission [workoutId userId languageName sourceText]
+  (let [lang-id (acc-lang languageName)
+        submitted-before (the-db/user-submitted? workoutId userId)]
+    (if (not submitted-before)
+      (do 
+        (the-db/add-workout-entry workoutId userId 
+                                  lang-id sourceText)
+        (home-page (the-db/get-user-by-id userId)))
+      (do (timbre/info "entry already made for workout" workoutId
+                       " by user: " userId) 
+          {:status 400 :body ""}))))
 
 (defn index-page [the-request]
   (let [the-coders (the-db/get-users)
@@ -90,9 +108,6 @@
           (home-page new-user))))))
 
 
-#_(defn view-workout-entry [workouts-entry-id]
-  (layout/render "createWorkout.html"))
-
 (defn create-workout [username title desc start end]
   (timbre/info "Create workout endpoint reached!!!")
   
@@ -118,15 +133,18 @@
 
   (POST "/logUserIn" [username password] 
         (fn [req] (logUserIn req username password)))
-  (POST "/signUserUp" [firstname lastname username 
-                       email password]
+  (POST "/signUserUp" [firstname lastname username email password]
         (signUserUp firstname lastname username 
                     email password))
   
   (POST "/createWorkout" [username title desc startDateInput endDateInput] 
         (create-workout username title desc startDateInput endDateInput))
-  (GET "/getWorkout" [workoutId] (get-workout-details workoutId))
-  (GET "/submissionPage" [workoutId userId] (submission-page workoutId userId)))
+  (GET "/getWorkout" [workoutId] 
+       (get-workout-details workoutId))
+  (GET "/submissionPage" [workoutId userId] 
+       (submission-page workoutId userId))
+  (POST "/acceptSubmission" [workoutId userId languageName sourceText] 
+        (accept-submission workoutId userId languageName sourceText)))
 
 ;; postgres timestamp format
 ;; 2002-12-31 16:00:00

@@ -13,10 +13,10 @@
                 <div class="panel-body">
                     <div class="row">
                         <div class="col-lg-12">
-                            <form action="{{servlet-context}}/" method="POST" role="form">
+                            <form action="{{servlet-context}}/acceptSubmission" method="POST" role="form">
                                 {% csrf-field %}
                                 <input type="hidden" name="workoutId" value="{{the_workout.workout_id}}" />
-                                <input type="hidden" name="userId" value="{{the_submiitter.user_id}}" />
+                                <input type="hidden" name="userId" value="{{the_submitter.user_id}}" />
                                 
                                 <div class="form-group">
                                   <label for="workoutName">Workout title:</label>
@@ -31,7 +31,7 @@
                                 </div>
                                 
                                 <div class="input-group">                                            
-                                  <input type="textBox" id="datebox" class="form-control"></input>
+                                  <input type="textbox" id="languageName" name="languageName"  class="form-control"></input>
                                   <div class="input-group-btn">
                                     <button type="button" class="btn dropdown-toggle" data-toggle="dropdown">
                                       Language type select<span class="caret"></span>
@@ -63,8 +63,8 @@
                                 <br/>
 
                                 <div class="form-group">
-                                  <label for="workoutDesc">Source text:</label>
-                                  <textarea class="form-control" rows="5" id="entrySource" name="entrySource"></textarea>
+                                  <label for="entrySource">Source text:</label>
+                                  <textarea class="form-control" rows="5" id="entrySource" name="sourceText"></textarea>
                                 </div>
                                 <div class="form-group">
                                     <div class="row">
@@ -91,10 +91,11 @@
 {% endblock %} {% block page-scripts %}
 <script type="text/javascript">
   jQuery(document).ready(function() {
-  jQuery('#demolist li a').on('click', function(){
-  jQuery('#datebox').val($(this).html());
+    jQuery('#demolist li a').on('click', function(){
+      jQuery('#languageName').val($(this).html());
   });
-  
+
+  jQuery('#languageName').prop('readonly', true);  
   jQuery('#submitterName, #workoutName').prop('readonly', true);
   });
 </script>
