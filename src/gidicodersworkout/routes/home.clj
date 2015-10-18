@@ -155,7 +155,7 @@ Will return nil if the language is non-existent"
   
   (POST "/createWorkout" [username title desc startDateInput endDateInput] 
         (create-workout username title desc startDateInput endDateInput))
-  (GET "/getWorkout" [workoutId] 
+  #_(GET "/getWorkout" [workoutId] 
        (get-workout-details workoutId))
   (GET "/submissionPage" [workoutId userId] 
        (submission-page workoutId userId))
