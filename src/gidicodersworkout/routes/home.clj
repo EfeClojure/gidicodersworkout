@@ -1,5 +1,6 @@
 (ns gidicodersworkout.routes.home
   (:require [gidicodersworkout.layout :as layout]
+            [schema.core :as s]
             [compojure.core :refer [defroutes GET POST]]
             [ring.util.http-response :refer [ok found]]
             [ring.util.response :refer [response]]
@@ -8,7 +9,7 @@
             
             [taoensso.timbre :as timbre :only [trace debug info 
                                                warn error fatal]]
-            [selmer.filters :as sel-fils]
+            [selmer.filters :as filters]
             [digest :as digest]
             [clojure.data.json :as json]))
 
@@ -16,6 +17,9 @@
 (defonce username-no-exists "That username does NOT exist.")
 (defonce username-exists "That username already exists.")
 (defonce password-no-match "Password does NOT match.")
+
+#_(filters/add-filter! :ellipsify #(if (> (.length %) 3) 
+                                     (.substring % 0 3) %))
 
 #_(defn render-with-cookie [page-response cookie-key cookie-val]
   (println "cookie-key : " cookie-key " cookie-val: " cookie-val)
@@ -57,6 +61,8 @@
       (layout/render "submissionScreen.html"  {}))))
 
 (defn acc-lang [lang]
+  "Accepted language: To get the id for the language name. 
+Will return nil if the language is non-existent"
   (let [the-langs (the-db/get-languages)
         found (for [langs the-langs
                     :when (.equalsIgnoreCase (langs :language_name) 
@@ -76,7 +82,8 @@
         (home-page (the-db/get-user-by-id userId)))
       (do (timbre/info "entry already made for workout" workoutId
                        " by user: " userId) 
-          {:status 400 :body ""}))))
+          (home-page (the-db/get-user-by-id userId)  
+                     #_{:_error "User has already made a submission!"})))))
 
 (defn index-page [the-request]
   (let [the-coders (the-db/get-users)
@@ -119,6 +126,11 @@
       {:status 500 :headers {"Content-Type" "text/html"} 
        :body  (pr-str ["Hello" :from 'Refresh])})))
 
+(defn view-all-entries [workout-id workout-title]
+  (let [the-entries (the-db/get-workout-entries workout-id)]
+    (layout/render "viewAllEntriesForWorkout.html" 
+                   {:workout-entries the-entries
+                    :workout-title workout-title})))
 
 (defn about-page []
   (layout/render "about.html"))
@@ -144,7 +156,10 @@
   (GET "/submissionPage" [workoutId userId] 
        (submission-page workoutId userId))
   (POST "/acceptSubmission" [workoutId userId languageName sourceText] 
-        (accept-submission workoutId userId languageName sourceText)))
+        (accept-submission workoutId userId languageName sourceText))
+
+  (GET "/viewWorkoutEntries" [workoutId workoutTitle] 
+       (view-all-entries workoutId workoutTitle)))
 
 ;; postgres timestamp format
 ;; 2002-12-31 16:00:00

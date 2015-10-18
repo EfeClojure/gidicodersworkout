@@ -2,15 +2,18 @@
 <div id="mainBody" class="jumbotron">
     <ul class="nav nav-tabs nav-justified" role="tablist">
         <li role="presentation">
-            <a href="#allworkouts-list" aria-controls="allworkouts-list" role="tab" data-toggle="tab">All Workouts</a>
+            <a href="#allworkouts-list" aria-controls="allworkouts-list" 
+               role="tab" data-toggle="tab">All Workouts</a>
         </li>
 
         <li role="presentation" class="active">
-            <a href="#myworkouts-list" aria-controls="myworkouts-list" role="tab" data-toggle="tab">My Workouts</a>
+            <a href="#myworkouts-list" aria-controls="myworkouts-list" 
+               role="tab" data-toggle="tab">Workouts I created</a>
         </li>
 
         <li role="presentation">
-            <a href="#myentries-list" aria-controls="myentries-list" role="tab" data-toggle="tab">My entries</a>
+            <a href="#myentries-list" aria-controls="myentries-list" 
+               role="tab" data-toggle="tab">My entries</a>
         </li>
     </ul>
 
@@ -19,7 +22,7 @@
             {% for workout in all-workouts %}
             <a href="#" class="list-group-item">
                 <h4 class="list-group-item-heading">{{workout.workout_title}}</h4>
-                <p class="list-group-item-text">{{workout.workout_text | ellipsify}}</p>
+                <p class="list-group-item-text">{{workout.workout_text|ellipsify}}</p>
 
                 <h0 style='display:none'>{{workout.workout_id}}</h0>
                 <h1 style='display:none'>{{workout.workout_text}}</h1>
@@ -33,7 +36,7 @@
             {% for workout in my-workouts %}
             <a href="#" class="list-group-item">
                 <h4 class="list-group-item-heading">{{workout.workout_title}}</h4>
-                <p class="list-group-item-text">{{workout.workout_text | ellipsify}}</p>
+                <p class="list-group-item-text">{{workout.workout_text|ellipsify}}</p>
             </a>
             {% endfor %}
             <button id="showCreateDialogButton" class="btn btn-primary btn-lg">Create Workout</button>
@@ -45,6 +48,7 @@
             {% for an-entry in my-entries %}
             <a href="#" class="list-group-item">
                 <h4 class="list-group-item-heading">{{an-entry.workout_title}}</h4>
+                <p class="list-group-item-text"><i>{{an-entry.source_text|ellipsify}}</i></p>
                 <p class="list-group-item-text"><i>{{an-entry.date_sent_in}}</i></p>
             </a>
             {% endfor %}
@@ -61,34 +65,43 @@
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                     <h4 class="modal-title">Create a Workout</h4>
                 </div>
+            
                 <div class="modal-body">
                     <form id="createWorkoutForm" action="/createWorkout" method="POST">
                         {% csrf-field %}
                         <div id="workoutTitleDiv" class="input-group">
-                            <!-- <span class="input-group-addon" id="basic-addon1">Title</span> -->
-                            <label for="workoutTitle">Title:</label>
-                            <input type="text" class="form-control" id="workoutTitle" name="title" placeholder="Title" aria-describedby="basic-addon1">
-                            <br/>
-                            <span class="error">This field is required</span>
+                          <label for="workoutTitle">Title:</label>
+                          <input type="text" class="form-control" id="workoutTitle" name="title" 
+                                 placeholder="Title" aria-describedby="basic-addon1">
+                          <br/>
+                          <div class="alert alert-danger myerror" role="alert error">
+                            <a href="#" class="alert-link">This field is required</a>
+                          </div>
                         </div>
                         <br/>
 
                         <div id="workoutDescDiv" class="form-group">
-                            <label for="workoutDesc">Description:</label>
-                            <textarea class="form-control" rows="5" id="workoutDesc" name="desc"></textarea>
-                            <span class="error">This field is required</span>
+                          <label for="workoutDesc">Description:</label>
+                          <textarea class="form-control" rows="5" id="workoutDesc" name="desc"></textarea>
+                          <div class="alert alert-danger myerror" role="alert">
+                            <a href="#" class="alert-link">This field is required</a>
+                          </div>
                         </div>
 
                         <div id="startDateDiv" class='form-group'>
                             <label>Start date time(yyyy-MM-dd hh:mm:ss)</label>
                             <input type='text' class="form-control" name="startDateInput" data-format="yyyy-MM-dd hh:mm:ss" />
-                            <span class="error">This field is required</span>
+                            <div class="alert alert-danger myerror" role="alert error">
+                              <a href="#" class="alert-link">Please enter a valid date</a>
+                            </div>
                         </div>
 
                         <div id="endDateDiv" class='form-group'>
                             <label>End date time(yyyy-MM-dd hh:mm:ss)</label>
                             <input type='text' class="form-control" name="endDateInput" data-format="yyyy-MM-dd hh:mm:ss" />
-                            <span class="error">This field is required</span>
+                            <div class="alert alert-danger myerror" role="alert error">
+                              <a href="#" class="alert-link">Please enter a valid date</a>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -104,24 +117,19 @@
     </div>
 
 </div>
-{% endblock %} {% block page-scripts %}
+{% endblock %} 
+
+{% block page-scripts %}
 <script type="text/javascript">
     var username = "{{user.username}}";
     var userId = "{{user.user_id}}";
-    //    function ellipsify(theText) {
-    //      if(theText.length > 15) {
-    //        return theText.substring(0, 12) + "...";
-    //      } else 
-    //        return theText;
-    //    }
-
+    
     function isEmpty(str) {
         return (!str || 0 === str.length);
     }
 
     function OnCreateWorkOutClick() {
         jQuery('#showCreateDialogButton').click(function() {
-
             jQuery('#createWorkoutModal').modal('show');
 
             var now = new Date();
@@ -135,11 +143,11 @@
     }
 
     function hideErrorFields() {
-        jQuery('#workoutTitleDiv .error').hide();
-        jQuery('#workoutDescDiv .error').hide();
+        jQuery('#workoutTitleDiv .myerror').hide();
+        jQuery('#workoutDescDiv .myerror').hide();
 
-        jQuery('#startDateDiv .error').hide();
-        jQuery('#endDateDiv .error').hide();
+        jQuery('#startDateDiv .myerror').hide();
+        jQuery('#endDateDiv .myerror').hide();
     }
 
     function OnCreateYeahClicked() {
@@ -167,19 +175,25 @@
 
         if (isEmpty(title)) {
             errorPresent = true;
-            jQuery('#workoutTitleDiv .error').show();
+            jQuery('#workoutTitleDiv .myerror').show();
         }
         if (isEmpty(desc)) {
             errorPresent = true;
-            jQuery('#workoutDescDiv .error').show();
+            jQuery('#workoutDescDiv .myerror').show();
         }
         if (isEmpty(start)) {
             errorPresent = true;
-            jQuery('#startDateDiv .error').show();
+            jQuery('#startDateDiv .myerror').show();
+        } else if(!startDateOk) {
+            errorPresent = true;
+            jQuery('#startDateDiv .myerror').show();
         }
         if (isEmpty(end)) {
             errorPresent = true;
-            jQuery('#endDateDiv .error').show();
+            jQuery('#endDateDiv .myerror').show();
+        } else if(!endDateOk) {
+            errorPresent = true;
+            jQuery('#endDateDiv .myerror').show();
         }
         if (!errorPresent) {
             var hiddenField = '<input type="hidden" name="username" value="{{user.username}}" />';
@@ -202,7 +216,7 @@
             var aWorkoutDiv = $(this);
             aWorkoutDiv.click(function() {
                 console.log("a list item clicked.");
-
+                
                 var workoutId = $(this).find('h0').text();
                 var workoutTitle = $(this).find('h4').text();
                 var workoutDesc = $(this).find('h1').text();
@@ -212,12 +226,12 @@
                              + ", start: " + workoutStart + ", end: " + workoutEnd);
     
                 //----
-                jQuery.get('customTemplates/viewWorkout.html', function(data) {
+                jQuery.get('customTemplates/viewWorkout.html?eee=' + Math.random(), function(data) {
                     jQuery('#viewWorkoutModal').remove();
 
                     jQuery('#mainBody').append(data);
                     jQuery('#viewWorkoutModal').modal('show');
-                    //console.log("Data Ajaxed!" + data);
+                    console.log("Data Ajaxed!" + data);
 
                     jQuery('#viewWorkoutModal h4').text(workoutTitle);
 
@@ -234,17 +248,19 @@
 
                         window.location.href = redirectUrl;
                     });
-                    //OnCreateYeahClicked();
+                    jQuery('#viewEntriesButton').click(function() {
+                        var redirectUrl = context + "/viewWorkoutEntries?workoutId=" + workoutId 
+                                          + "&workoutTitle=" + workoutTitle;
+                        console.log("Redirect url: " + redirectUrl);
+                        window.location.href = redirectUrl;
+                    });
                 }, "text");
             });
         });
-
     }
-
 
     jQuery(document).ready(function() {
         OnCreateWorkOutClick();
-
         forWorkoutClicked();
     });
 </script>

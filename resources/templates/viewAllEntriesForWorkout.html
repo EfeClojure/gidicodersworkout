@@ -1,0 +1,23 @@
+{% extends "base.html" %} 
+
+
+{% block content %}
+<div class="page-header">
+  <h1>Entries for: {{workout-title}}</h1>
+</div>
+
+
+<div id="mainBody" class="jumbotron">
+    <ul class="list-group">
+      {% for workout-entry in workout-entries %}
+      <li class="list-group-item form-group">
+        <label for="workoutDesc">{{workout-entry.first_name}}</label>
+        <textarea class="form-control" rows="5" name="workoutDesc" 
+                  readonly="true">{{workout-entry.source_text}}</textarea>
+      </li>
+      {% endfor %}
+    </ul>
+</div>
+{% endblock %} 
+
+

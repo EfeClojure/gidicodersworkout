@@ -68,21 +68,30 @@
   (belongs-to users {:fk :creator_id})
   (has-many workout-entries)
 
-  (transform (fn [{timestamp :start_date :as v}]
-               (if timestamp 
-                 (assoc v :start_date (timestamp-to-lgtime timestamp))
+  (prepare (fn [{timestamp :start_date :as v}]
+             (if timestamp
+               (assoc v :start_date (timestamp-to-lgtime timestamp))
+               v)))
+  (transform (fn [{lg-timestamp :start_date :as v}]
+               (if lg-timestamp 
+                 (assoc v :start_date (to-timestamp (Long/parseLong lg-timestamp)))
                  v)))
-  (transform (fn [{timestamp :end_date :as v}]
-               (if timestamp 
-                 (assoc v :end_date (timestamp-to-lgtime timestamp))
+
+  (prepare (fn [{timestamp :end_date :as v}]
+             (if timestamp
+               (assoc v :end_date (timestamp-to-lgtime timestamp))
+               v)))
+  (transform (fn [{lg-timestamp :end_date :as v}]
+               (if lg-timestamp 
+                 (assoc v :end_date (to-timestamp (Long/parseLong lg-timestamp)))
                  v))))
 
 (defentity users
   (pk :user_id) 
   (table :usermaster)
   
-  (entity-fields :user_id :first_name :last_name :email_address 
-                 :username :password)
+  (entity-fields :user_id :first_name :last_name 
+                 :email_address :username :password)
 
   (has-one roles {:fk :role_id})
   (has-many workouts)
@@ -111,8 +120,16 @@
   (belongs-to workouts {:fk :workout_id})
   (has-one users {:fk :user_id})
   (has-one languages {:fk :language_id})
-  
-  (transform (fn [{timestamp :date_sent_in :as v}]
+
+  (prepare (fn [{timestamp :date_sent_in :as v}]
+             (if timestamp
+               (assoc v :date_sent_in (timestamp-to-lgtime timestamp))
+               v)))
+  (transform (fn [{lg-timestamp :date_sent_in :as v}]
+               (if lg-timestamp 
+                 (assoc v :date_sent_in (to-timestamp (Long/parseLong lg-timestamp)))
+                 v)))
+  #_(transform (fn [{timestamp :date_sent_in :as v}]
                (if timestamp 
                  (assoc v :date_sent_in (timestamp-to-lgtime timestamp))
                  v))))
@@ -195,6 +212,7 @@
 (defn get-workout-entries [workout-id]
   (let [workoutIdAsInt (Integer/parseInt workout-id)
         the-entries (select workout-entries
+                            (with users)
                             (where {:workout_id workoutIdAsInt}))]
     (if (not (empty? the-entries))
       the-entries
@@ -207,7 +225,7 @@
                         (order :date_sent_in :ASC))]
     (if (not (empty? results))
       (map #(assoc % :date_sent_in 
-                   (to-timestamp (% :date_sent_in))) 
+                   (% :date_sent_in)) 
            results)
       nil)))
 

@@ -14,7 +14,9 @@
 (filters/add-filter! :markdown (fn [content] [:safe (md-to-html-string content)]))
 
 
-(filters/add-filter! :ellipsify #(if (> (.length %) 3) (.substring % 0 3) %))
+(filters/add-filter! :ellipsify 
+                     #(if (> (.length %) 10) 
+                        (str (.substring % 0 10) " ...") %))
 
 
 (defn render
