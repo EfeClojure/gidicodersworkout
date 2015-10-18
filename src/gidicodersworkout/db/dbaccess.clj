@@ -205,6 +205,10 @@
      nil)))
 
 
+(defn get-workout-by-userId [userId]
+  (select workouts 
+          (with users (where {:user_id (Integer/parseInt userId)}))))
+
 (defn get-workout-by-username [username]
   (select workouts 
           (with users (where {:username username}))))
@@ -216,6 +220,17 @@
                             (where {:workout_id workoutIdAsInt}))]
     (if (not (empty? the-entries))
       the-entries
+      nil)))
+
+(defn get-user-entries-by-userId [userId]
+  (let [results (select workout-entries
+                        (with workouts)
+                        (with users (where {:user_id (Integer/parseInt userId)}))
+                        (order :date_sent_in :ASC))]
+    (if (not (empty? results))
+      (map #(assoc % :date_sent_in 
+                   (% :date_sent_in)) 
+           results)
       nil)))
 
 (defn get-user-entries [username]

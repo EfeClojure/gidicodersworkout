@@ -262,6 +262,17 @@
     jQuery(document).ready(function() {
         OnCreateWorkOutClick();
         forWorkoutClicked();
+
+    {% if :_error %}
+        alert("{{:_error}}");
+    {% endif %}
+
+    {%if :_error %}
+    console.log("luminus if else ... then");
+    {% else %}
+    console.log("luminus if else ... else");
+    //alert("Got no errors here.");
+    {% endif %}
     });
 </script>
 

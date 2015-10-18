@@ -32,19 +32,18 @@
   (layout/render "loginScreen.html"))
 
 
-(defn home-page [user-record]
-  (let [user-name (user-record :username)
-        my-workouts (the-db/get-workout-by-username user-name)
-        my-entries (the-db/get-user-entries user-name)
+(defn home-page [user-id]
+  (let [the-user (the-db/get-user-by-id user-id)
+        my-workouts (the-db/get-workout-by-userId user-id)
+        my-entries (the-db/get-user-entries-by-userId user-id)
         all-workouts (the-db/get-workouts)]
-    (timbre/info "Got username: " user-name my-entries)
     (layout/render "home.html" 
-                   {:user user-record
+                   {:user the-user
                     :all-workouts all-workouts
                     :my-workouts my-workouts
                     :my-entries my-entries})))
 
-(defn get-workout-details [workout-id] 
+#_(defn get-workout-details [workout-id] 
   (let [the-workout (the-db/get-workout-by-id workout-id)]
     (if (not (empty? the-workout))
       {:status 200 :headers {"Content-Type" "application/json"}  
@@ -79,11 +78,12 @@ Will return nil if the language is non-existent"
       (do 
         (the-db/add-workout-entry workoutId userId 
                                   lang-id sourceText)
-        (home-page (the-db/get-user-by-id userId)))
+        (found (str "/homePage?userId=" userId)))
       (do (timbre/info "entry already made for workout" workoutId
                        " by user: " userId) 
-          (home-page (the-db/get-user-by-id userId)  
-                     #_{:_error "User has already made a submission!"})))))
+          (found (str "/homePage?userId=" userId))
+          #_(home-page (the-db/get-user-by-id userId)  
+                       {:_error "User has already made a submission!"})))))
 
 (defn index-page [the-request]
   (let [the-coders (the-db/get-users)
@@ -97,7 +97,9 @@ Will return nil if the language is non-existent"
     (if the-user
       (if (= (digest/md5 password) 
              (:password the-user))
-        (home-page the-user)
+        #_(home-page (the-user :user_id))
+        (found (str "/homePage?userId=" 
+                    (the-user :user_id)))
         (layout/render "loginScreen.html"
                        {:auth_error password-no-match}))
       (layout/render "loginScreen.html" 
@@ -112,7 +114,8 @@ Will return nil if the language is non-existent"
       (do 
         (let [new-user (the-db/add-user first-name last-name 
                                         username email-add password)]
-          (home-page new-user))))))
+          (found (str "/homePage?userId=" (the-user :user_id)))
+          #_(home-page new-user))))))
 
 
 (defn create-workout [username title desc start end]
@@ -122,9 +125,8 @@ Will return nil if the language is non-existent"
     (if the-user
       (do 
         (the-db/add-workout (the-user :user_id) title desc start end)
-        (home-page the-user))
-      {:status 500 :headers {"Content-Type" "text/html"} 
-       :body  (pr-str ["Hello" :from 'Refresh])})))
+        (found (str "/homePage?userId=" (the-user :user_id))))
+      (found (str "/homePage?userId=" (the-user :user_id))))))
 
 (defn view-all-entries [workout-id workout-title]
   (let [the-entries (the-db/get-workout-entries workout-id)]
@@ -142,6 +144,8 @@ Will return nil if the language is non-existent"
   (GET "/about" [] (about-page))
 
   (GET "/login" [] (login-page))
+  (GET "/homePage" [userId] 
+       (home-page userId))
 
   (POST "/logUserIn" [username password] 
         (fn [req] (logUserIn req username password)))
