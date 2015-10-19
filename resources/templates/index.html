@@ -77,10 +77,8 @@
                 //----
                 jQuery.get('customTemplates/viewWorkout.html', function(data) {
                     jQuery('#viewWorkoutModal').remove();
-
                     jQuery('#mainBody').append(data);
                     jQuery('#viewWorkoutModal').modal('show');
-
                     jQuery('#viewWorkoutModal h4').text(workoutTitle);
 
                     jQuery('#viewWorkoutModal').find('textarea[name=workoutDesc]').text(workoutDesc);
@@ -88,7 +86,15 @@
                     jQuery('#viewWorkoutModal').find('input[name=endDateInput]').val(workoutEnd);
 
                     jQuery('#viewWorkoutModal input[type=text], #viewWorkoutModal textarea').prop('readonly', true);
-                    jQuery('#viewWorkoutModal .modal-footer').remove();
+                    jQuery('#viewWorkoutModal #createSubmissionButton').remove();
+                    jQuery('#viewWorkoutModal button[data-dismiss=modal]').remove();
+    
+                    jQuery('#viewEntriesButton').click(function() {
+                        var redirectUrl = context + "/viewWorkoutEntries?workoutId=" + workoutId 
+                                          + "&workoutTitle=" + workoutTitle;
+                        console.log("Redirect url: " + redirectUrl);
+                        window.location.href = redirectUrl;
+                    });
                 }, "text");
             });
         });

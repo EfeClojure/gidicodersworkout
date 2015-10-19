@@ -118,7 +118,12 @@
                  :date_sent_in :language_id :workout_id)
   
   (belongs-to workouts {:fk :workout_id})
-  (has-one users {:fk :user_id})
+  
+  ;;; This kept giving me incorrect results
+  ;;; when I run (get-workout-entries)
+  #_(has-one users {:fk :user_id})  
+  
+  (belongs-to users {:fk :user_id})
   (has-one languages {:fk :language_id})
 
   (prepare (fn [{timestamp :date_sent_in :as v}]
@@ -221,31 +226,21 @@
         the-entries (select workout-entries
                             (with users)
                             (where {:workout_id workoutIdAsInt}))]
-    (if (not (empty? the-entries))
-      the-entries
-      nil)))
+    the-entries))
 
 (defn get-user-entries-by-userId [userId]
   (let [results (select workout-entries
                         (with workouts)
                         (with users (where {:user_id (Integer/parseInt userId)}))
                         (order :date_sent_in :ASC))]
-    (if (not (empty? results))
-      (map #(assoc % :date_sent_in 
-                   (% :date_sent_in)) 
-           results)
-      nil)))
+    results))
 
 (defn get-user-entries [username]
   (let [results (select workout-entries
                         (with workouts)
                         (with users (where {:username username}))
                         (order :date_sent_in :ASC))]
-    (if (not (empty? results))
-      (map #(assoc % :date_sent_in 
-                   (% :date_sent_in)) 
-           results)
-      nil)))
+    results))
 
 (defn get-workout-entry [workout-entry-id]
   (let [results (select workout-entries
