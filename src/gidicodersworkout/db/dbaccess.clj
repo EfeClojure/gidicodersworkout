@@ -167,6 +167,9 @@
                          :email_address email-add :username username
                          :password (digest/md5 password) :role_id 1})))
 
+#_(insert users (values {:first_name "efe4" :last_name "ariaro4" 
+                         :email_address "efe4@yahoo.com" :username "efe4" 
+                         :password (digest/md5 "asdffdsa") :role_id 1}))
 
 (defn get-workouts
   ([]

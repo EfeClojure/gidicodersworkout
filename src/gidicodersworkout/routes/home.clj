@@ -100,7 +100,6 @@ Will return nil if the language is non-existent"
     (if the-user
       (if (= (digest/md5 password) 
              (:password the-user))
-        #_(home-page (the-user :user_id))
         (found (str "/homePage?userId=" 
                     (the-user :user_id) "&_error="))
         (layout/render "loginScreen.html"
@@ -115,9 +114,10 @@ Will return nil if the language is non-existent"
       (layout/render "loginScreen.html" 
                      {:auth_error username-exists})
       (do 
-        (let [new-user (the-db/add-user first-name last-name 
-                                        username email-add password)]
-          (found (str "/homePage?userId=" (the-user :user_id) 
+        (let [new-user-id (the-db/add-user first-name last-name 
+                                           username email-add password)]
+          #_(timbre/info "New user registered. ..: " new-user-id) 
+          (found (str "/homePage?userId=" (new-user-id :user_id) 
                       "&_error=")))))))
 
 
