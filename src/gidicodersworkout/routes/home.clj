@@ -79,11 +79,16 @@ Will return nil if the language is non-existent"
     (if (not submitted-before)
       (do 
         (let [added-entry (the-db/add-workout-entry workoutId userId 
-                                                    lang-id sourceText)]
-          (timbre/info "Added entry: " added-entry))
-        (found (str "/homePage?userId=" userId "&_error=")))
+                                                    lang-id sourceText)
+              workout-details (the-db/get-workout-by-id workoutId)
+              workoutTitle (workout-details :workout_title)
+              title (URLEncoder/encode workoutTitle "UTF-8")]
+          (timbre/info "Added entry: " added-entry)
+          #_(found (str "/homePage?userId=" userId "&_error="))
+          (found (str "/viewWorkoutEntries?workoutId=" workoutId 
+                      "&workoutTitle=" title))))
       (do (timbre/info "entry already made for workout" workoutId
-                       " by user: " userId) 
+                       " by user: " userId)
           (found (str "/homePage?userId=" userId "&_error=" 
                       (URLEncoder/encode "The user has already made a submission" 
                                          "UTF-8")))))))

@@ -11,10 +11,6 @@
 
 
 
-#_(defdb the-db (postgres {:db "gidicodersworkoutdb"
-                         :user "postgres"
-                         :password "asdffdsa"}))
-
 (defdb the-db 
   (if (System/getenv "DATABASE_URL")
     (let [db-uri (java.net.URI. (System/getenv "DATABASE_URL"))
@@ -229,9 +225,10 @@
     the-entries))
 
 (defn get-user-entries-by-userId [userId]
-  (let [results (select workout-entries
+  (let [userIdAsInt (Integer/parseInt userId)
+        results (select workout-entries
                         (with workouts)
-                        (with users (where {:user_id (Integer/parseInt userId)}))
+                        (with users (where {:user_id userIdAsInt}))
                         (order :date_sent_in :ASC))]
     results))
 
@@ -256,8 +253,7 @@
         userIdAsInt (Integer/parseInt user-id)
         the-entries (select workout-entries
                             (with users (where {:user_id userIdAsInt}))
-                            (with workouts 
-                                  (where {:workout_id workoutIdAsInt})))]
+                            (where {:workout_id workoutIdAsInt}))]
     (if (empty? the-entries)
       false true)))
 
